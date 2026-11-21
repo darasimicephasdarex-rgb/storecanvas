@@ -16,3 +16,16 @@ body{background:#101915;color:var(--ink)}.app-shell{display:grid;height:100vh;mi
 @media(max-width:820px){.app-shell{grid-template-columns:180px minmax(0,1fr);grid-template-rows:60px minmax(0,1fr)}.inspector{position:absolute;right:0;top:60px;bottom:0;width:260px;box-shadow:-6px 0 19px #142d2044;z-index:7}.main-stage{grid-column:2}.top-actions .btn-outline{display:none}.toolbar-left{display:none}}
 @media(max-width:560px){.app-shell{display:flex;flex-direction:column;height:auto;min-height:100vh}.topbar{height:60px;position:sticky;top:0}.brand{width:auto}.brand span{display:none}.top-actions .icon-btn{display:none}.leftbar{height:145px;flex:none}.sidebar-switch{display:none}.panel-body{padding:8px;overflow:auto}.element-grid{display:flex}.element-tile{min-width:95px;min-height:55px;padding:6px}.element-icon{font-size:13px}.panel-note,.left-footer,.feature-card,.tiny-title{display:none}.main-stage{min-height:650px}.editor-toolbar{height:49px}.editor-scroll{padding:10px;max-height:620px}.timeline-wrap{height:120px}.inspector{position:relative;inset:auto;width:auto;height:490px;box-shadow:none}.page-preview{margin:0}.preview-header nav{gap:8px;font-size:8px}.section-stack{padding:9px 0}}
 .sc-motion-surface{position:relative;width:100%;height:100%}.sc-layer-content{margin:0}.sc-node .sc-hover-lift,.sc-node .sc-hover-scale{transition:.2s}
+
+/* StoreCanvas keyframe studio; accessible keyboard-controlled scrubber. */
+.kf-card{border:1px solid #d9e6dc;padding:10px;border-radius:9px;margin-bottom:9px;background:#fbfdfb}
+.kf-card-title{display:flex;align-items:center;gap:8px;margin-bottom:7px;color:#355d42;font-size:11px}
+.kf-card-title span{margin-left:auto;color:#668771;font-variant-numeric:tabular-nums}
+.kf-card-title button{min-width:44px;min-height:44px;border:1px solid #d7e2d8;border-radius:7px;background:white;color:#8d3f3f;font-size:17px}
+.kf-card .field{margin:0}.kf-card .field input{padding:6px}
+.kf-card .field-grid3{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:8px}
+.kf-scrubber{display:flex;align-items:center;gap:11px;margin:0 0 9px;color:#42694c;font-size:11px}
+.kf-scrubber input{flex:1;accent-color:#3c8f54}.kf-scrubber button{min-height:44px;border:1px solid #cadbce;border-radius:6px;background:white;color:#365e40}
+.track-key{position:absolute;top:3px;width:9px;height:9px;transform:rotate(45deg);border:1px solid #fff;background:#174f32;z-index:2;pointer-events:none}
+.sc-motion-active>.sc-motion-surface,.sc-motion-surface{transform-origin:center}
+@media(prefers-reduced-motion:reduce){.sc-node.sc-motion-active>.sc-motion-surface{animation:none!important}}

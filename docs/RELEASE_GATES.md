@@ -1,4 +1,4 @@
-# StoreCanvas production release gates — v0.7 (Nov 21, 2026)
+# StoreCanvas production release gates — v0.5 (Nov 21, 2026)
 
 Use [x] only where a local or remote check has produced evidence. Do not conflate source completion, GitHub CI, and Shopify production verification.
 
@@ -11,13 +11,13 @@ Use [x] only where a local or remote check has produced evidence. Do not conflat
 - [x] Editor uses the same Shopify compilation engine; old exporter replaced with adapter
 - [x] Local image bundling including format-signature checks
 - [x] Deterministic ZIP generation and CRC32 ZIP check
-- [x] Local and CI Node tests (23), ZIP integrity and Chromium smoke test successful
-- [x] GitHub CI passed on v0.7 Shopify Theme Check and unit tests; generated theme ZIP attached as QA artifact
+- [x] Local Node tests (14) and constrained Chromium smoke test successful
+- [ ] GitHub CI on newest v0.5 commit green (verify after push)
 
 ## Shopify correctness
 - [x] Previous freeform demonstration section successfully committed to unpublished Horizon theme
 - [ ] **New v0.5 full-theme ZIP** uploaded and checked on an unpublished Shopify test theme
-- [x] Official Shopify Theme Check passed on complete generated theme directory (error-level gate); all generated images have dimensions and known collection routes use Shopify route objects
+- [ ] Shopify Theme Check / JSON schema and Liquid syntax audit for generated theme
 - [ ] Real product, variant inventory, cart, checkout and customer path QA
 - [ ] Storefront semantics, accessibility, SEO, localization, translation and mobile testing
 - [ ] Multiple theme/Shopify plan compatibility and app extension integration
@@ -38,56 +38,55 @@ No live theme publishing performed. App deployment not begun. GitHub draft PR is
 ## Compatibility milestones (2026-11-21)
 - [x] v0.5 homepage output and four SVGs accepted on unpublished Shopify Horizon (8 files).
 - [x] v0.6 product, cart, collection alternate templates accepted on unpublished Horizon (8 files).
-- [x] v0.6 had 18 Node tests; v0.7 has 23 tests and a Chromium slideshow pause/focus/hover regression.
-- [x] Complete independent theme directory passed official Shopify Theme Check.\n- [ ] Complete independent theme ZIP imported as a new unpublished Shopify theme (not just section-level QA).
+- [x] 18 Node tests and Chromium browser smoke test passed on v0.6.
+- [ ] Complete independent theme ZIP installed and Theme Check validated.
 - [ ] Verified variant add-to-cart, cart updates, checkout handoff in isolated dev store without real payment.
 - [ ] High-variant products (250+) supported and audited.
 - [ ] Accessible dynamic checkout, product media, translations and product forms fully implemented.
 
-## v0.7 verification detail
-- Official GitHub Actions Theme Check found seven missing image dimensions and two hardcoded route warnings; both generator defects were fixed and validated again.
-- A reproducible build produces the same Shopify theme in `dist/shopify-theme` and `dist/storecanvas-theme.zip`; SHA-256 integrity manifest tests prevent silent file substitutions.
-- Shopify theme lint passing does **not** prove all runtime commerce, payment, animation, accessibility, localization or independent theme installation paths.
-- Slider autoplay now distinguishes explicit Pause from hover/focus/visibility pauses; it does not resume while another pause source remains active.
-- CI artifacts are disposable development builds and must not be automatically published to customers.
+## v0.7 Theme Check and motion gate — 2026-11-21
+- [x] Fully generated independent theme directory passes official Shopify Theme Check in GitHub CI (error threshold).
+- [x] Generated images include width and height, and /collections/all href is transformed to a market-aware Shopify route.
+- [x] 24 automated Node tests, SHA256 manifest and asset reference validation.
+- [x] Chromium slideshow autoplay, hover/focus, explicit Play/Pause interaction regression.
+- [x] Fade, slide and zoom CSS slideshow transitions; aria-hidden applied to inactive figures.
+- [ ] Independent theme ZIP imported into a new unpublished Shopify theme; full checkout QA remains blocked.
+- [ ] Production app OAuth, database, multi-tenant isolation, review, hosting, and rollback.
 
-## Motion-rendering gate
-- [x] Fade, slide and zoom transitions implemented in storefront CSS and browser runtime (not just editor controls).
-- [x] Inactive slideshow figures receive `aria-hidden=true` while active figures are perceivable.
-- [x] Local Chromium test verifies autoplay, hover pause, keyboard focus pause, pointer/focus resume and explicit Pause/Play.
-- [ ] Broader screen-reader audits, touch-device testing and large breakpoint visual regression remain outstanding.
+## v0.8 high-variant safety gate — 2026-11-21
+- [x] Product option picker uses `product.options_with_values`, not a 250-variant loop.
+- [x] Native product forms block invalid/stale variant IDs on loading, API failure or no match.
+- [x] Section Rendering API refreshes product availability, quantities, media and localized price using selected option IDs.
+- [x] Offline Chromium regression verified focus, parameter preservation, isolation, error guard and retry.
+- [x] 25 local Node tests and generated ZIP structural audit passed.
+- [ ] Latest GitHub CI and Shopify Theme Check on v0.8 (verify after push).
+- [ ] Real 250+ variant Shopify store and combined listing QA.
+- [ ] Independent themeCreate ZIP import, checkout handoff, accessibility / localization certification.
 
-## v0.8 verified release gates — 2026-11-21
-- [x] Shopify 250+ variant strategy implemented with `product.options_with_values` and server-side option selection.
-- [x] Invalid/stale purchase guard and manual retry implemented.
-- [x] 25 local Node tests, offline Chromium regression and generated ZIP structure checks passed.
-- [x] GitHub Actions CI and official Theme Check error gate passed on v0.8 commit `4a00b31f`.
-- [x] Exact v0.7 26-file independent ZIP imported by Shopify `themeCreate`, with no user errors, as a new unpublished theme.
-- [x] Imported theme's product section, CSS and JS upgraded to v0.8, saved without errors.
-- [x] Desktop/mobile screenshot requests completed for homepage/product, plus collection desktop and cart mobile.
-- [ ] Actual Shopify product option click, add-to-cart, cart quantity and checkout handoff verified on isolated development store.
-- [ ] Full independent v0.8 ZIP import as one unmodified archive (v0.7 archive imported then upgraded in place).
-- [ ] Real 250+ variants and combined listing tests, translated UI and selling-plan QA.
-- [ ] Public app OAuth, data isolation, rollback, hosting, webhooks and production approval.
-
-## v0.9 localization and commerce
-- [x] English/Spanish locale catalogs and matching interpolation variable checks.
-- [x] Option-value selection messages use translated section data.
-- [x] Product form prevents stale, empty, disabled selections.
-- [x] Unit tests and offline browser regressions updated.
-- [ ] GitHub Theme Check and fresh ZIP import require separate acceptance.
-- [ ] Real cart-to-checkout testing, selling plans, multi-store OAuth and publishing remain incomplete.
+## v0.9 work — English/Spanish commerce and UI safety
+- [x] Locale catalogs generated from one checked translation dictionary; all Liquid `t` references have matching English/Spanish entries.
+- [x] Active Shopify product section supplies localized AJAX feedback through escaped data attributes, including update, failure and invalid combinations.
+- [x] Product form submit blocked when the selected variant is absent, loading, failed or button-disabled.
+- [x] Reproducible browser runtime regenerated and structure/locale tests added (28 Node tests + optional offline Chromium high-variant test locally).
+- [ ] GitHub CI/official Theme Check verification for v0.9 must be checked on pushed commit.
+- [ ] Unmodified v0.9 ZIP must be imported as a fresh theme and compared to preview; file-patch acceptance is not equivalent.
+- [ ] Real Shopify interactions and transactions must not be claimed from offline regression tests.
+- [ ] Additional languages, selling plans, subscriptions, screen-reader audits, live cart-to-checkout and real 250+ catalog QA are outstanding.
 
 ## Live storefront QA runner (non-purchasing, v0.9)
-- [x] Guarded Playwright runner created in tests/live_storefront_smoke.py; preview_theme_id required and live-theme URLs refused.
-- [x] Offline URL safety self-test passes, no external network or merchant data is changed.
+- [x] Guarded Playwright runner created in tests/live_storefront_smoke.py; preview_theme_id required.
+- [x] Offline URL safety self-test passes; no merchant data changed.
 - [ ] Real browser QA not run in current environment because Shopify preview host is unreachable over network.
-- [ ] Run on an in-stock product in an unpublished test theme to verify product→cart→quantity→checkout handoff. --verify-checkout only opens checkout; never submits payment or an order.
+- [ ] Run against an in-stock product in an unpublished test theme for product→cart→quantity→checkout handoff; --verify-checkout only opens checkout and never submits payment.
 
-## Fresh v0.8 import evidence (2026-11-21)
-- [x] Shopify themeCreate accepted the complete unmodified 26-file v0.8 archive, creating UNPUBLISHED `StoreCanvas v0.8 Fresh ZIP QA` with zero user errors.
-- [x] Inspected actual Shopify theme directory: correct v0.8 config, product section, 7 JSON templates, all SVG/CSS/JS assets; original archive size 26 files.
-- [x] Shopify desktop/mobile preview capture for homepage, product, collection and cart completed on the new unpublished theme.
-- [x] v0.9 GitHub CI passed 28 Node tests, Python safety checks, deterministic theme build, structural audit and official Theme Check.
-- [ ] Fresh *v0.9* archive import still outstanding until Shopify confirms upload URL and import.
-- [ ] Real add-to-cart and checkout interactions remain unverified; snapshots alone do not prove functionality.
+
+## v0.10 keyframe and fresh-import update — 2026-11-21
+- [x] Fresh unmodified v0.9 ZIP imported into a new Shopify UNPUBLISHED theme with 27 files and zero themeCreate userErrors.
+- [x] v0.9 homepage and product preview screenshot requests completed.
+- [x] Shared bounded custom keyframe model (2–12 frames per layer, 0–100% offsets).
+- [x] Editor authoring controls, diamond timeline markers and keyboard scrubber.
+- [x] Custom CSS motion exported to Shopify from same validated renderer as preview.
+- [x] Reduced-motion support and strict numeric validation tested locally.
+- [ ] Actual customer-browser cart and checkout handoff QA (no interactive storefront control in connection).
+- [ ] Fresh v0.10 ZIP import and 250+ real Shopify variant product test.
+- [ ] Advanced grouped/scroll-scrub animations and full production app backend.

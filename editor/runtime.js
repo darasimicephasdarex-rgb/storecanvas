@@ -1,7 +1,57 @@
 /* StoreCanvas generated runtime. Edit engine/*.mjs and run npm run build:browser. */
 (()=>{'use strict';
 
+/* engine/keyframes.mjs */
+/** StoreCanvas motion keyframes: bounded, deterministic, CSS-safe. */
+const KEYFRAME_MAX = 12;
+const DEFAULT_FRAMES = Object.freeze([
+  Object.freeze({at:0,x:0,y:24,scale:0.96,rotate:0,opacity:0}),
+  Object.freeze({at:100,x:0,y:0,scale:1,rotate:0,opacity:100}),
+]);
+const bounded=(value,min,max,label)=>{
+ if(typeof value!=='number'||!Number.isFinite(value)||value<min||value>max)throw Error(`Invalid motion ${label}`);
+ return value;
+};
+function normalizeFrames(input){
+ if(input===undefined||input===null)return [];
+ if(!Array.isArray(input))throw Error('Motion keyframes must be an array');
+ if(input.length===0)return [];
+ if(input.length<2||input.length>KEYFRAME_MAX)throw Error('Motion requires 2–12 keyframes');
+ const frames=input.map((raw,i)=>{
+  if(!raw||typeof raw!=='object'||Array.isArray(raw))throw Error(`Invalid motion keyframe ${i}`);
+  return {
+   at:bounded(raw.at,0,100,'offset'),
+   x:bounded(raw.x??0,-600,600,'x'),
+   y:bounded(raw.y??0,-600,600,'y'),
+   scale:bounded(raw.scale??1,0.1,3,'scale'),
+   rotate:bounded(raw.rotate??0,-360,360,'rotation'),
+   opacity:bounded(raw.opacity??100,0,100,'opacity'),
+  };
+ });
+ if(frames[0].at!==0||frames.at(-1).at!==100)throw Error('Motion must begin at 0% and end at 100%');
+ for(let i=1;i<frames.length;i++)if(frames[i].at<=frames[i-1].at)throw Error('Motion keyframe offsets must increase');
+ return frames;
+}
+const kfFmt=n=>Number(n.toFixed(3));
+function frameStyle(frame){return `opacity:${kfFmt(frame.opacity/100)};transform:translate3d(${kfFmt(frame.x)}px,${kfFmt(frame.y)}px,0) rotate(${kfFmt(frame.rotate)}deg) scale(${kfFmt(frame.scale)});`;}
+function keyframeCSS(layerId,frames){
+ if(!/^[a-zA-Z][a-zA-Z0-9_-]{1,63}$/.test(layerId))throw Error('Invalid motion ID');
+ const list=normalizeFrames(frames);
+ if(!list.length)return '';
+ return `@keyframes sc-custom-${layerId}{${list.map(f=>`${kfFmt(f.at)}%{${frameStyle(f)}}`).join('')}}.sc-layer-${layerId}.sc-visible>.sc-keyframe-surface{animation:sc-custom-${layerId} var(--sc-duration,800ms) var(--sc-easing,ease-out) var(--sc-delay,0ms) both}`;
+}
+function atProgress(frames,at){
+ const list=normalizeFrames(frames);if(!list.length)return null;
+ const time=typeof at==='number'&&Number.isFinite(at)?Math.max(0,Math.min(100,at)):0;
+ let next=1;while(next<list.length-1&&list[next].at<time)next++;
+ const a=list[next-1],b=list[next],t=Math.max(0,Math.min(1,(time-a.at)/(b.at-a.at)));
+ const out={at:time};for(const prop of ['x','y','scale','rotate','opacity'])out[prop]=a[prop]+(b[prop]-a[prop])*t;
+ return out;
+}
+
+
 /* engine/core.mjs */
+
 /** StoreCanvas core v0.4 — deterministic, dependency-free, browser/Node compatible.
  * Accepts v0.3 page JSON, rejects hostile/invalid documents, and produces inert HTML.
  * This is a safe preview compiler, NOT an unrestricted Liquid/theme writer.
@@ -34,7 +84,7 @@ function motion(v){const m=v&&typeof v==='object'&&!Array.isArray(v)?v:{};return
  enter:choice(m.enter,MOTION,'none'), trigger:choice(m.trigger,['load','scroll'],'load'),
  duration:finite(m.duration,100,10000,700), delay:finite(m.delay,0,20000,0),
  easing:choice(m.easing,['ease','ease-in','ease-out','ease-in-out','linear','cubic-bezier(0.2,0.7,0.2,1)'],'ease-out'),
- hover:choice(m.hover,HOVERS,'none'), haptic:choice(m.haptic,['off','soft','medium'],'off')};
+ hover:choice(m.hover,HOVERS,'none'), haptic:choice(m.haptic,['off','soft','medium'],'off'),keyframes:normalizeFrames(m.keyframes)};
 }
 function validateProject(raw){
  if(!raw||typeof raw!=='object'||Array.isArray(raw))throw Error('Project must be an object');
@@ -102,18 +152,19 @@ function renderLayer(n,map,seen){if(n.hidden)return '';
    const slides=n.slides.map((s,i)=>`<figure class="sc-slide${i===0?' is-active':''}" aria-hidden="${i===0?'false':'true'}" ${i===0?'':'hidden'}>${mediaTag(s.image,s.caption)}<figcaption>${escapeHTML(s.caption)}</figcaption></figure>`).join('');
    inner=`<div class="sc-slideshow" data-autoplay="${n.autoplay}" data-interval="${n.interval}" data-transition="${n.transition}" role="region" aria-label="${escapeHTML(n.name)}"><div class="sc-slides">${slides}</div><button type="button" data-prev aria-label="Previous slide">‹</button><button type="button" data-next aria-label="Next slide">›</button><button type="button" data-pause aria-label="Pause slideshow">Pause</button></div>`;
  }
- const id=escapeHTML(n.id);return `<div class="sc-layer sc-layer-${id}" data-motion="${m.enter}" data-trigger="${m.trigger}" data-hover="${m.hover}" style="${cssBox(n,'desktop',n.parentId?map.get(n.parentId):null)}--sc-delay:${m.delay}ms;--sc-duration:${m.duration}ms;z-index:${fmt(n.z)};transform:rotate(${fmt(n.rotation)}deg)">${inner}</div>`;
+ const id=escapeHTML(n.id);return `<div class="sc-layer sc-layer-${id}" data-motion="${m.enter}" data-trigger="${m.trigger}" data-hover="${m.hover}" style="${cssBox(n,'desktop',n.parentId?map.get(n.parentId):null)}--sc-delay:${m.delay}ms;--sc-duration:${m.duration}ms;--sc-easing:${m.easing};z-index:${fmt(n.z)};transform:rotate(${fmt(n.rotation)}deg)">${m.keyframes.length?`<div class="sc-keyframe-surface">${inner}</div>`:inner}</div>`;
 }
 function renderPreview(input){const doc=validateProject(input);let sheets=[];
  const sections=doc.sections.map(s=>{const map=new Map(s.layers.map(n=>[n.id,n]));
    for(const n of s.layers){const parent=n.parentId?map.get(n.parentId):null;
      sheets.push(`@media(min-width:701px) and (max-width:1040px){#${s.id} .sc-layer-${n.id}{${cssBox(n,'tablet',parent)}}}`);
      sheets.push(`@media(max-width:700px){#${s.id} .sc-layer-${n.id}{${cssBox(n,'mobile',parent)}}}`);
+     if(n.motion.keyframes.length)sheets.push(keyframeCSS(n.id,n.motion.keyframes));
    }
    return `<section class="sc-section" id="${s.id}" aria-label="${escapeHTML(s.name)}" style="--height:${s.height}px;--tablet:${s.tabletHeight}px;--mobile:${s.mobileHeight}px;background:${s.bg};border-radius:${s.radius}px;overflow:${s.clip?'hidden':'visible'}"><div class="sc-stage">${s.layers.filter(n=>!n.parentId).sort((a,b)=>a.z-b.z).map(n=>renderLayer(n,map)).join('')}</div></section>`;
  }).join('');
  return {html:sections,css:BASE_CSS+'\n'+sheets.join('\n'),js:BEHAVIOR_JS,document:doc};}
-const BASE_CSS = `*,*::before,*::after{box-sizing:border-box}.sc-page{display:grid;gap:20px;max-width:1200px;margin:auto;padding:20px}.sc-section{position:relative;isolation:isolate}.sc-stage{height:var(--height);position:relative}.sc-layer{position:absolute;transform-origin:center}.sc-text{white-space:pre-wrap;line-height:1.1;overflow-wrap:anywhere}.sc-media,.sc-shape,.sc-container,.sc-slideshow{width:100%;height:100%;position:relative;overflow:hidden}.sc-media img,.sc-slide img{display:block;width:100%;height:100%;object-fit:cover}.sc-media-placeholder{display:block;width:100%;height:100%;background:linear-gradient(140deg,#a2c19b,#245034)}.sc-button{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;text-decoration:none;text-align:center;padding:10px}.sc-slide{position:absolute;inset:0;margin:0;opacity:0;pointer-events:none;transition:opacity .55s ease,transform .55s cubic-bezier(.2,.7,.2,1)}.sc-slide.is-active{opacity:1;pointer-events:auto;z-index:1}.sc-slide[hidden]{display:none}.sc-slideshow[data-transition=slide] .sc-slide{transform:translateX(8%)}.sc-slideshow[data-transition=slide] .sc-slide.is-active{transform:translateX(0)}.sc-slideshow[data-transition=zoom] .sc-slide{transform:scale(1.08)}.sc-slideshow[data-transition=zoom] .sc-slide.is-active{transform:scale(1)}.sc-slide figcaption{position:absolute;bottom:16px;left:16px;background:#143a2dda;color:white;padding:8px;border-radius:6px}.sc-slideshow button{position:absolute;z-index:1;top:50%;transform:translateY(-50%);min-width:44px;min-height:44px;background:#ffffffef;border:1px solid #678771;border-radius:50%;cursor:pointer}.sc-slideshow button[data-prev]{left:10px}.sc-slideshow button[data-next]{right:10px}.sc-slideshow button[data-pause]{top:auto;bottom:10px;left:50%;transform:translateX(-50%);border-radius:8px;font-size:12px}.sc-layer[data-hover=lift]:hover{translate:0 -5px}.sc-layer[data-hover=scale]:hover{scale:1.03}.sc-layer[data-hover=tilt]:hover{rotate:2deg}.sc-layer[data-motion=fade-up].sc-visible{animation:scFadeUp var(--sc-duration) ease-out var(--sc-delay) both}.sc-layer[data-motion=fade-in].sc-visible{animation:scFadeIn var(--sc-duration) ease-out var(--sc-delay) both}@keyframes scFadeUp{from{opacity:0;translate:0 16px}to{opacity:1;translate:0 0}}@keyframes scFadeIn{from{opacity:0}to{opacity:1}}.sc-layer:focus-within{outline:2px solid #28794a;outline-offset:2px}@media(min-width:701px) and (max-width:1040px){.sc-stage{height:var(--tablet)}}@media(max-width:700px){.sc-page{padding:12px;gap:12px}.sc-stage{height:var(--mobile)}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}`;
+const BASE_CSS = `*,*::before,*::after{box-sizing:border-box}.sc-page{display:grid;gap:20px;max-width:1200px;margin:auto;padding:20px}.sc-section{position:relative;isolation:isolate}.sc-stage{height:var(--height);position:relative}.sc-layer{position:absolute;transform-origin:center}.sc-keyframe-surface{position:relative;width:100%;height:100%;transform-origin:center}.sc-text{white-space:pre-wrap;line-height:1.1;overflow-wrap:anywhere}.sc-media,.sc-shape,.sc-container,.sc-slideshow{width:100%;height:100%;position:relative;overflow:hidden}.sc-media img,.sc-slide img{display:block;width:100%;height:100%;object-fit:cover}.sc-media-placeholder{display:block;width:100%;height:100%;background:linear-gradient(140deg,#a2c19b,#245034)}.sc-button{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;text-decoration:none;text-align:center;padding:10px}.sc-slide{position:absolute;inset:0;margin:0;opacity:0;pointer-events:none;transition:opacity .55s ease,transform .55s cubic-bezier(.2,.7,.2,1)}.sc-slide.is-active{opacity:1;pointer-events:auto;z-index:1}.sc-slide[hidden]{display:none}.sc-slideshow[data-transition=slide] .sc-slide{transform:translateX(8%)}.sc-slideshow[data-transition=slide] .sc-slide.is-active{transform:translateX(0)}.sc-slideshow[data-transition=zoom] .sc-slide{transform:scale(1.08)}.sc-slideshow[data-transition=zoom] .sc-slide.is-active{transform:scale(1)}.sc-slide figcaption{position:absolute;bottom:16px;left:16px;background:#143a2dda;color:white;padding:8px;border-radius:6px}.sc-slideshow button{position:absolute;z-index:1;top:50%;transform:translateY(-50%);min-width:44px;min-height:44px;background:#ffffffef;border:1px solid #678771;border-radius:50%;cursor:pointer}.sc-slideshow button[data-prev]{left:10px}.sc-slideshow button[data-next]{right:10px}.sc-slideshow button[data-pause]{top:auto;bottom:10px;left:50%;transform:translateX(-50%);border-radius:8px;font-size:12px}.sc-layer[data-hover=lift]:hover{translate:0 -5px}.sc-layer[data-hover=scale]:hover{scale:1.03}.sc-layer[data-hover=tilt]:hover{rotate:2deg}.sc-layer[data-motion=fade-up].sc-visible{animation:scFadeUp var(--sc-duration) ease-out var(--sc-delay) both}.sc-layer[data-motion=fade-in].sc-visible{animation:scFadeIn var(--sc-duration) ease-out var(--sc-delay) both}@keyframes scFadeUp{from{opacity:0;translate:0 16px}to{opacity:1;translate:0 0}}@keyframes scFadeIn{from{opacity:0}to{opacity:1}}.sc-layer:focus-within{outline:2px solid #28794a;outline-offset:2px}@media(min-width:701px) and (max-width:1040px){.sc-stage{height:var(--tablet)}}@media(max-width:700px){.sc-page{padding:12px;gap:12px}.sc-stage{height:var(--mobile)}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}`;
 const BEHAVIOR_JS = `(()=>{'use strict';const reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;let io=null;const motion=document.querySelectorAll('.sc-layer[data-motion]');if(!reduced){if('IntersectionObserver'in window){io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('sc-visible');io.unobserve(e.target)}}));motion.forEach(n=>{if(n.dataset.trigger==='scroll')io.observe(n);else n.classList.add('sc-visible')})}else motion.forEach(n=>n.classList.add('sc-visible'))}const timers=[];document.querySelectorAll('.sc-slideshow').forEach(el=>{const slides=[...el.querySelectorAll('.sc-slide')];if(!slides.length)return;let i=0,explicitPaused=reduced||el.dataset.autoplay!=='true',hoverPaused=false,focusPaused=false;const isPaused=()=>explicitPaused||hoverPaused||focusPaused||document.hidden;const paint=()=>{el.dataset.ready='true';slides.forEach((s,j)=>{s.hidden=false;s.classList.toggle('is-active',j===i);s.setAttribute('aria-hidden',String(j!==i))})};const toggle=el.querySelector('[data-pause]');const sync=()=>{toggle.textContent=explicitPaused?'Play':'Pause';toggle.setAttribute('aria-label',explicitPaused?'Play slideshow':'Pause slideshow');toggle.setAttribute('aria-pressed',String(!explicitPaused))};const advance=n=>{i=(n+slides.length)%slides.length;paint()};el.querySelector('[data-prev]').addEventListener('click',()=>advance(i-1));el.querySelector('[data-next]').addEventListener('click',()=>advance(i+1));toggle.addEventListener('click',()=>{explicitPaused=!explicitPaused;sync()});el.addEventListener('focusin',()=>{focusPaused=true});el.addEventListener('focusout',e=>{if(!el.contains(e.relatedTarget))focusPaused=false});el.addEventListener('mouseenter',()=>{hoverPaused=true});el.addEventListener('mouseleave',()=>{hoverPaused=false});const ms=Math.max(1800,Number(el.dataset.interval)||4000);timers.push(setInterval(()=>{if(!isPaused())advance(i+1)},ms));sync();paint()});document.addEventListener('click',e=>{const t=e.target.closest('[data-haptic]');if(!t||window.SC_HAPTICS_ENABLED!==true||!navigator.vibrate)return;try{const h=t.dataset.haptic;if(h!=='off')navigator.vibrate(h==='medium'?24:12)}catch{}});addEventListener('pagehide',()=>{timers.forEach(clearInterval);if(io)io.disconnect()},{once:true})})();`;
 function fullHTML(input){const out=renderPreview(input);return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHTML(out.document.name)}</title><style>${out.css}</style></head><body><main class="sc-page">${out.html}</main><script>${out.js.replace(/<\/script/gi,'<\\/script')}<\/script></body></html>`.replace('<\\/script>','</script>');}
 
@@ -124,6 +175,9 @@ const BUILTIN_IMAGES = Object.freeze({"fern":"<svg xmlns=\"http://www.w3.org/200
 
 
 /* engine/commerce.mjs */
+/** StoreCanvas commerce primitives for the generated independent starter theme.
+ * Server-rendered Liquid is the source of truth. JS progressively updates product
+ * variant price/media/quantity and never bypasses native Shopify forms. */
 const PRODUCT_SECTION = String.raw`{% liquid
   assign active_variant = product.selected_or_first_available_variant
   assign active_image = active_variant.featured_image | default: product.featured_image
@@ -212,6 +266,8 @@ const CART_SECTION = String.raw`<section class="sc-commerce sc-cart" aria-labell
 </section>`;
 
 const COMMERCE_JS = String.raw`(()=>{'use strict';
+// Shopify option value selection supports more than 250 variants without enumerating product.variants.
+// Never modify cart/order state: the native product form remains the only add-to-cart path.
 const inflight=new WeakMap();
 const message=(root,key)=>root.dataset['scMsg'+key.charAt(0).toUpperCase()+key.slice(1)]||'';
 document.addEventListener('submit',event=>{const root=event.target.closest?.('[data-sc-product]');if(!root)return;const id=root.querySelector('[data-sc-variant-id]')?.value; if(root.getAttribute('aria-busy')==='true'||root.dataset.scSelectionError==='true'||!id||root.querySelector('[data-sc-add]')?.disabled){event.preventDefault();announce(root,message(root,'blocked'));}});
@@ -271,30 +327,36 @@ document.addEventListener('change',async event=>{
 
 
 /* engine/locales.mjs */
-const STORECANVAS_STRINGS=Object.freeze({
- en:{
+/** Merchant-facing language strings for the exported Shopify Online Store theme.
+ * StoreCanvas editor chrome is deliberately independent from storefront locale.
+ */
+const STORECANVAS_STRINGS = Object.freeze({
+ en: {
   navigation:{main:'Main navigation',home:'Home',shop:'Shop',cart:'Cart ({{ count }})'},
   accessibility:{skip_to_content:'Skip to content',store_home:'{{ name }} home'},
-  product:{no_image:'No product photograph available',unavailable:'Combination unavailable',option_unavailable:'Unavailable',quantity:'Quantity',add_to_cart:'Add to cart',sold_out:'Sold out',retry:'Retry selection',selection_loading:'Updating selection…',selection_updated:'Product options updated.',selection_invalid:'This combination is unavailable.',selection_failed:'Unable to update product selection. Please retry.',selection_incomplete:'Choose all product options.',selection_blocked:'Select an available variant before adding to cart.'},
+  product:{no_image:'No product photograph available',unavailable:'Combination unavailable',option_unavailable:'Unavailable',quantity:'Quantity',add_to_cart:'Add to cart',sold_out:'Sold out',choose_option:'Choose an option',retry:'Retry selection',selection_loading:'Updating selection…',selection_updated:'Product options updated.',selection_invalid:'This combination is unavailable.',selection_failed:'Unable to update product selection. Please retry.',selection_incomplete:'Choose all product options.',selection_blocked:'Select an available variant before adding to cart.'},
   cart:{title:'Your cart',empty:'Your cart is empty.',continue_shopping:'Continue shopping',remove:'Remove',remove_label:'Remove {{ title }}',quantity:'Quantity',quantity_label:'Quantity for {{ title }}',subtotal:'Subtotal',taxes_included:'Taxes are included.',taxes_checkout:'Taxes and shipping are calculated at checkout.',update:'Update cart',checkout:'Checkout'},
   search:{title:'Search',label:'Search products',submit:'Search'},
   errors:{not_found:'Page not found',go_home:'Go home'}
  },
- es:{
+ es: {
   navigation:{main:'Navegación principal',home:'Inicio',shop:'Tienda',cart:'Carrito ({{ count }})'},
   accessibility:{skip_to_content:'Saltar al contenido',store_home:'Inicio de {{ name }}'},
-  product:{no_image:'No hay foto del producto disponible',unavailable:'Combinación no disponible',option_unavailable:'No disponible',quantity:'Cantidad',add_to_cart:'Añadir al carrito',sold_out:'Agotado',retry:'Reintentar selección',selection_loading:'Actualizando selección…',selection_updated:'Opciones del producto actualizadas.',selection_invalid:'Esta combinación no está disponible.',selection_failed:'No se pudo actualizar la selección. Inténtalo de nuevo.',selection_incomplete:'Elige todas las opciones del producto.',selection_blocked:'Selecciona una variante disponible antes de añadirla al carrito.'},
+  product:{no_image:'No hay foto del producto disponible',unavailable:'Combinación no disponible',option_unavailable:'No disponible',quantity:'Cantidad',add_to_cart:'Añadir al carrito',sold_out:'Agotado',choose_option:'Elige una opción',retry:'Reintentar selección',selection_loading:'Actualizando selección…',selection_updated:'Opciones del producto actualizadas.',selection_invalid:'Esta combinación no está disponible.',selection_failed:'No se pudo actualizar la selección. Inténtalo de nuevo.',selection_incomplete:'Elige todas las opciones del producto.',selection_blocked:'Selecciona una variante disponible antes de añadirla al carrito.'},
   cart:{title:'Tu carrito',empty:'Tu carrito está vacío.',continue_shopping:'Seguir comprando',remove:'Eliminar',remove_label:'Eliminar {{ title }}',quantity:'Cantidad',quantity_label:'Cantidad para {{ title }}',subtotal:'Subtotal',taxes_included:'Los impuestos están incluidos.',taxes_checkout:'Los impuestos y el envío se calculan al pagar.',update:'Actualizar carrito',checkout:'Finalizar compra'},
   search:{title:'Buscar',label:'Buscar productos',submit:'Buscar'},
   errors:{not_found:'Página no encontrada',go_home:'Ir al inicio'}
  }
 });
+const LIQUID_T = (key, params='') => `{{ 'storecanvas.${key}' | t${params ? ': '+params : ''} }}`;
 function validateTranslations(){
- const walk=(obj,prefix='',map=new Map())=>{for(const [key,v] of Object.entries(obj)){const k=prefix?prefix+'.'+key:key;if(typeof v==='string')map.set(k,v);else if(v&&typeof v==='object'&&!Array.isArray(v))walk(v,k,map);else throw Error('Invalid translation '+k)}return map;};
- const english=walk(STORECANVAS_STRINGS.en),spanish=walk(STORECANVAS_STRINGS.es);
- const vars=s=>[...s.matchAll(/{{\s*(\w+)\s*}}/g)].map(x=>x[1]).sort().join(',');
- for(const [key,value] of english)if(!spanish.has(key)||vars(value)!==vars(spanish.get(key)))throw Error('Mismatched Spanish translation '+key);
- for(const key of spanish.keys())if(!english.has(key))throw Error('Mismatched English translation '+key);
+ const walk=(root,prefix='',out=new Map())=>{for(const [key,value] of Object.entries(root)){const path=prefix?`${prefix}.${key}`:key;if(typeof value==='string')out.set(path,value);else if(value&&typeof value==='object'&&!Array.isArray(value))walk(value,path,out);else throw Error(`Invalid translation: ${path}`)}return out};
+ const english=walk(STORECANVAS_STRINGS.en);const spanish=walk(STORECANVAS_STRINGS.es);
+ for(const [key,englishValue] of english){if(!spanish.has(key))throw Error(`Missing Spanish translation ${key}`);
+  const placeholders=(s)=>[...s.matchAll(/{{\s*(\w+)\s*}}/g)].map(x=>x[1]).sort().join(',');
+  if(placeholders(englishValue)!==placeholders(spanish.get(key)))throw Error(`Incompatible placeholders at ${key}`);
+ }
+ for(const key of spanish.keys())if(!english.has(key))throw Error(`Missing English translation ${key}`);
  return true;
 }
 
@@ -323,7 +385,7 @@ body{margin:0;color:#183522;background:#fff;font-family:Arial,sans-serif}
 @media(max-width:700px){.sc-product-main{grid-template-columns:1fr}.sc-site-header{align-items:flex-start;flex-direction:column}}
 `;
 const header = section('StoreCanvas header', `<header class="sc-site-header"><a href="{{ routes.root_url }}" aria-label="{{ 'storecanvas.accessibility.store_home' | t: name: shop.name | escape }}"><strong>{{ shop.name | escape }}</strong></a><nav class="sc-site-nav" aria-label="{{ 'storecanvas.navigation.main' | t | escape }}"><a href="{{ routes.root_url }}">{{ 'storecanvas.navigation.home' | t }}</a><a href="{{ routes.all_products_collection_url }}">{{ 'storecanvas.navigation.shop' | t }}</a><a href="{{ routes.cart_url }}">{{ 'storecanvas.navigation.cart' | t: count: cart.item_count }}</a></nav></header>`);
-const footer = section('StoreCanvas footer', `<footer class="sc-site-footer"><span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name | escape }}</span><a href="{{ routes.root_url }}">Home</a></footer>`);
+const footer = section('StoreCanvas footer', `<footer class="sc-site-footer"><span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name | escape }}</span><a href="{{ routes.root_url }}">{{ 'storecanvas.navigation.home' | t }}</a></footer>`);
 const product = section('StoreCanvas product', PRODUCT_SECTION);
 const collection = section('StoreCanvas collection', `<div class="sc-commerce"><h1>{{ collection.title | escape }}</h1><div>{{ collection.description }}</div>{% paginate collection.products by 24 %}<div class="sc-commerce-grid">{% for p in collection.products %}<a href="{{ p.url }}">{% if p.featured_image %}{{ p.featured_image | image_url: width: 640 | image_tag: loading: 'lazy' }}{% endif %}<h2>{{ p.title | escape }}</h2><p>{{ p.price | money }}</p></a>{% endfor %}</div>{{ paginate | default_pagination }}{% endpaginate %}</div>`);
 const cart = section('StoreCanvas cart', CART_SECTION);
@@ -378,7 +440,7 @@ function compileShopifyTheme(project){
  for(const [name,body] of Object.entries(sections))files.set(`sections/${name}.liquid`,body);
  const templates={index:'storecanvas-home',product:'main-product',collection:'main-collection',cart:'main-cart',page:'main-page',search:'main-search','404':'main-404'};
  for(const [name,sectionName] of Object.entries(templates))files.set(`templates/${name}.json`,template(sectionName));
- files.set('config/settings_schema.json',JSON.stringify([{name:'theme_info',theme_name:'StoreCanvas Starter',theme_author:'StoreCanvas',theme_version:'0.9.0',theme_documentation_url:'https://shopify.dev/docs/storefronts/themes',theme_support_url:'https://shopify.dev/'}]));
+ files.set('config/settings_schema.json',JSON.stringify([{name:'theme_info',theme_name:'StoreCanvas Starter',theme_author:'StoreCanvas',theme_version:'0.10.0',theme_documentation_url:'https://shopify.dev/docs/storefronts/themes',theme_support_url:'https://shopify.dev/'}]));
  files.set('locales/en.default.json',JSON.stringify({storecanvas:STORECANVAS_STRINGS.en}));
  files.set('locales/es.json',JSON.stringify({storecanvas:STORECANVAS_STRINGS.es}));
  return files;
@@ -402,5 +464,5 @@ function themeZip(files){if(!(files instanceof Map)||files.size===0)throw Error(
 }
 
 
-window.StoreCanvasEngine=Object.freeze({validateProject,renderPreview,compileShopifyTheme,themeZip});
+window.StoreCanvasEngine=Object.freeze({validateProject,renderPreview,compileShopifyTheme,themeZip,normalizeFrames,keyframeCSS,atProgress,DEFAULT_FRAMES});
 })();

@@ -1,4 +1,4 @@
-# StoreCanvas Studio — developer preview v0.9
+# StoreCanvas Studio — developer preview v0.8
 
 StoreCanvas is a **free-first, local visual Shopify theme editor** with nested freeform layers, responsive coordinates, motion controls, a slideshow component, optional device haptics, and a ZIP exporter.
 
@@ -6,7 +6,7 @@ StoreCanvas is a **free-first, local visual Shopify theme editor** with nested f
 
 ## Quick start (no paid tools)
 
-Open `editor/index.html` in a modern desktop browser, or serve this directory with any free static server. The browser runtime is self-contained and uses no external JavaScript dependencies. Design and export a Shopify theme ZIP. Always upload and preview it on an **unpublished test theme/store** first. The generated theme passes Shopify's official error-level Theme Check in CI; it is **not** certified for checkout/payment, real 250+ variant catalogs, app review or production use. Unpublished full-ZIP imports have been accepted by Shopify for v0.7 and v0.8.
+Open `editor/index.html` in a modern desktop browser, or serve this directory with any free static server. The browser runtime is self-contained and uses no external JavaScript dependencies. Design and export a Shopify theme ZIP. Always upload and preview it on an **unpublished test theme/store** first. The generated theme has not passed full Shopify Theme Check, app review or commerce QA.
 
 ## Developer commands (Node.js >= 20)
 
@@ -14,11 +14,9 @@ Open `editor/index.html` in a modern desktop browser, or serve this directory wi
 npm run build:browser  # regenerates classic editor/runtime.js from engine sources
 npm run check          # syntax + runtime reproducibility
 npm test               # unit and export-integrity tests
-npm run build:theme     # generate full theme directory + ZIP + SHA-256 manifest
-npm run check:theme     # validate complete generated theme structure and hashes
 ```
 
-Optional browser regressions: `python tests/browser_check.py` and `python tests/slideshow_browser.py` (requires locally installed Playwright and Chromium; not part of CI). The automated browser harness loads scripts without a web server to work inside constrained test environments; it is not a complete file:// compatibility certification.
+Optional browser regression: `python tests/browser_check.py` (requires locally installed Playwright and Chromium; not part of CI). The automated browser harness loads scripts without a web server to work inside constrained test environments; it is not a complete file:// compatibility certification.
 
 ## What changed in v0.5
 
@@ -54,31 +52,38 @@ Optional browser regressions: `python tests/browser_check.py` and `python tests/
 
 Generated Shopify product and cart sections now support selected variant price/media, availability, quantity-rule updates, cart line updates/removal, discounts and tax messaging. Commerce interactions use native Shopify forms; no checkout simulation or order placement occurs automatically. Run `npm test`, `npm run check`, and the optional Playwright browser smoke test. See `docs/SHOPIFY_QA_2026-11-21.md` for verified scope and outstanding risks. **This is not a production-ready theme or SaaS.**
 
-## v0.7 — Shopify Theme Check quality gate
+## v0.8 — Product option values, safe purchasing and recovery
 
-- GitHub Actions builds the complete 26-file theme and runs Shopify's official Theme Check against the generated source directory. The resulting ZIP is retained as a QA artifact on successful runs.
-- Generated images have explicit dimensions, and known collection/cart links use Shopify route objects for market-aware paths.
-- A local audit verifies section schema JSON, template and asset references, and SHA-256 file hashes.
-- Slideshow autoplay now pauses on hover, keyboard focus, explicit Pause and reduced motion; it resumes only when no pause source remains. Chromium regression covers transitions among these states.
-- **Outstanding:** The independent ZIP has not yet been installed as a separately created unpublished Shopify theme; app OAuth, multi-tenancy, publishing, rollback and high-variant products remain outstanding.
+The generated product template now uses Shopify `product.options_with_values` and the Section Rendering API to handle large variant catalogs without iterating `product.variants`. Server-provided option combinations control the native product form. Missing combinations, failed requests, and concurrent selections cannot submit an older variant ID. Keyboard focus, a polite status region and Retry selection support recovery.
 
-Run locally: `npm run check && npm test && npm run build:theme && npm run check:theme`. Shopify Theme Check runs automatically in GitHub Actions.
+For offline browser QA, run `python tests/high_variant_browser.py` after installing Playwright/Chromium. This test never makes a Shopify network request or places an order. See `docs/HIGH_VARIANT_QA_2026-11-21.md` for verified and unverified scope.
 
-### Slideshow interaction QA
-The generated storefront now animates `fade`, `slide`, and `zoom` transitions. Autoplay respects pointer hover, keyboard focus, explicit Pause, tab visibility and reduced-motion preferences. Inactive slides are marked as hidden from assistive technologies. An optional Chromium test is available via `python tests/slideshow_browser.py` (requires Playwright/Chromium on your own machine); CI executes the dependency-free Node tests.
+## v0.9 — localized commerce and accessibility safety
 
-## v0.8 — Shopify option-value selectors and independent QA theme
+The exported starter theme now includes English and Spanish Shopify locale catalogs (`locales/en.default.json` and `locales/es.json`), with localized navigation, product forms, error/retry states, cart labels, search and the skip link. The AJAX high-variant selection script takes feedback strings from **the active server-rendered section** and does not hardcode an English status message. Both locale catalogs have identical keys and parameter names, checked during compilation and by the structural audit.
 
-The generated product template now uses `product.options_with_values` and the Shopify Section Rendering API, so it does not enumerate the capped `product.variants` list. Invalid combinations, failed requests, and in-progress selections cannot submit stale product variant IDs. A retry control and focused status announcement provide recovery.
+Additional submit protection rejects stale, empty, busy or disabled product selections; incomplete selections reveal a retry control. The browser runtime is rebuilt from the same modules as the ZIP exporter. There are 28 Node unit tests plus an optional offline Chromium option-selection regression.
 
-The independent 26-file theme ZIP was successfully imported through Shopify's `themeCreate` as an **UNPUBLISHED** test theme, and then its product section and commerce assets were updated to v0.8. Desktop and mobile preview requests succeeded for homepage, product, cart and collection pages. No checkout order or payment was placed.
+This work **does not certify** checkout payments, translated merchant-authored product content, customer accounts, automatic publishing, or any deployed SaaS. The existing independent QA theme must be updated and tested before treating v0.9 as Shopify-accepted.
 
-See `docs/INDEPENDENT_THEME_IMPORT_V08.md` for exact acceptance evidence and `docs/HIGH_VARIANT_QA_2026-11-21.md` for remaining risks. All code remains free-first.
 
-## v0.9 — localized Shopify commerce
-The generated Shopify theme now includes English and Spanish storefront locale catalogs. Native Liquid translation keys are used for product forms, status/errors, cart labels, navigation, search and accessibility. Dynamic variant feedback is supplied by the current translated product section. Stale, empty and disabled variant states cannot be submitted. Run npm run check, npm test, npm run build:theme and npm run check:theme; this does not certify real Shopify checkout.
+## v0.10 — Custom keyframe animation studio
 
-### Fresh ZIP and real-store QA status (2026-11-21)
-Shopify accepted the complete original v0.8 ZIP as a **new, separate unpublished theme** named `StoreCanvas v0.8 Fresh ZIP QA` (26 source files, no import errors). Desktop/mobile previews of the homepage, product, cart and collection completed. This is rendering acceptance, **not proof of product clicks or checkout handoff**.
+StoreCanvas can now author 2–12 ordered keyframes per layer. Each keyframe has
+an explicit 0–100% offset and bounded X/Y translation, scale, rotation, and opacity.
+The visual inspector supports adding, editing, and deleting frames. The timeline
+shows keyframe markers and offers a keyboard-accessible scrubber. Custom animation
+is compiled by the same validator into both the browser preview and Shopify CSS;
+all values are strictly validated to avoid arbitrary CSS injection.
 
-To execute real interaction QA safely on an in-stock test product, install free Playwright + Chromium and run `python tests/live_storefront_smoke.py --preview 'https://your-store.myshopify.com/?preview_theme_id=THE_UNPUBLISHED_ID' --product-handle example-product`. The optional `--verify-checkout` only checks navigation: never supplies payment or places an order. The runner refuses URLs without a preview theme ID. GitHub CI runs its offline safety self-test, not live store mutations.
+Tested locally with `npm run check && npm test && npm run build:theme && npm run check:theme`,
+plus the optional `python tests/keyframes_browser.py` Chromium regression. The generated
+Shopify theme respects `prefers-reduced-motion`. The scrubber uses linear interpolation;
+selected playback easing controls CSS animation timing. No paid animation dependency.
+
+### Shopify QA status
+A fresh v0.9 archive was imported as unpublished Shopify theme **StoreCanvas v0.9 Fresh ZIP QA**,
+with 27 files and desktop/mobile page-preview requests. A real product-selection,
+add-to-cart, cart quantity update and checkout handoff has **not** yet been tested via
+interactive Shopify customer browser. Read-only screenshot/theme tools cannot substitute
+for that test. Do not publish before verified Shopify storefront interaction QA.

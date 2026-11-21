@@ -47,28 +47,11 @@ async def run():
   assert await preview.locator('.sc-section').count()==3
   assert await preview.locator('.sc-slideshow').count()==1
   await preview.locator('.sc-slideshow [data-next]').click()
-  assert await preview.locator('.sc-slideshow .sc-slide:not([hidden])').count()==1
+  assert await preview.locator('.sc-slideshow .sc-slide.is-active[aria-hidden="false"]').count()==1
+  assert await preview.locator('.sc-slideshow .sc-slide[aria-hidden="true"]').count()==2
   assert not preview_errors,preview_errors
   assert not errors,errors
-  # Exercise the progressive Shopify product variant handler without a live cart.
-  product=await browser.new_page(viewport={'width':390,'height':760})
-  errors_variant=[]
-  product.on('pageerror',lambda err:errors_variant.append(str(err)))
-  await product.set_content("""<!doctype html><html><body><section data-sc-product>
-    <div class="sc-product-media"><img src="https://example.test/default.jpg" srcset="https://example.test/old.jpg 2x" alt="Test product"></div>
-    <span data-sc-price>$10.00</span><select data-sc-variant name="id">
-    <option value="101" data-price="$10.00" data-available="true" data-min="1" data-max="5" data-increment="1" data-image="https://example.test/one.jpg" selected>One</option>
-    <option value="102" data-price="$20.00" data-available="false" data-min="2" data-max="4" data-increment="2" data-image="https://example.test/two.jpg">Two</option>
-    </select><input data-sc-quantity type="number" value="1"><button data-sc-add>Add to cart</button></section></body></html>""")
-  commerce_script=(ROOT/'engine/commerce.mjs').read_text().split('export const COMMERCE_JS = String.raw`',1)[1].rsplit('`;',1)[0]
-  await product.add_script_tag(content=commerce_script)
-  await product.locator('[data-sc-variant]').evaluate("el=>{el.selectedIndex=1;el.dispatchEvent(new Event('change',{bubbles:true}))}")
-  assert await product.locator('[data-sc-price]').inner_text()=='$20.00'
-  assert await product.locator('[data-sc-add]').is_disabled()
-  assert await product.locator('[data-sc-quantity]').get_attribute('min')=='2'
-  assert await product.locator('[data-sc-quantity]').get_attribute('step')=='2'
-  assert await product.locator('.sc-product-media img').get_attribute('srcset') is None
-  assert not errors_variant,errors_variant
+  # Option-value selection (v0.8+) is tested in high_variant_browser.py.
   await page.screenshot(path=str(ROOT/'tests/editor-v05.png'))
   await preview.screenshot(path=str(ROOT/'tests/storefront-v05.png'))
   print('No-server browser-loaded editor, 390px preview, ZIP download, ZIP integrity, 3 sections, slideshow and JS checks passed.')

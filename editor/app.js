@@ -17,7 +17,23 @@ const HOVERS=['none','lift','scale','tilt','glow','shake'];
 const EASINGS=['ease','ease-in','ease-out','ease-in-out','linear','cubic-bezier(0.2,0.7,0.2,1)'];
 const TRANSITIONS=['fade','slide','zoom'];
 const BUILTINS=['plant','fern','architecture','detail'];
-const EMPTY_MOTION=()=>({enter:'none',trigger:'load',duration:800,delay:0,easing:'ease-out',hover:'none',haptic:'off'});
+const EMPTY_MOTION=()=>({enter:'none',trigger:'load',duration:800,delay:0,easing:'ease-out',hover:'none',haptic:'off',keyframes:[]});
+const MOTION_ENGINE=()=>window.StoreCanvasEngine;
+function keyframeWidget(l){
+ const frames=l.motion?.keyframes||[];
+ if(!frames.length)return `<div class="insp-group"><h3>Keyframe studio</h3><p class="muted-note">Animate position, scale, rotation and opacity across a custom timeline. Compatible with the exported Shopify storefront.</p><button class="btn btn-outline" data-action="kf-enable">＋ Create keyframe animation</button></div>`;
+ return `<div class="insp-group"><h3>Keyframe studio · ${frames.length}/12</h3><p class="muted-note">Offsets must increase from 0% to 100%. All values are exported to Shopify CSS. Use the timeline scrubber to preview the selected layer.</p>${frames.map((f,i)=>`<div class="kf-card"><div class="kf-card-title"><strong>${i===0?'Start':i===frames.length-1?'Finish':'Keyframe '+(i+1)}</strong><span>${f.at}%</span>${i!==0&&i!==frames.length-1?`<button data-action="kf-remove" data-index="${i}" title="Remove this keyframe" aria-label="Remove keyframe ${i+1}">×</button>`:''}</div><div class="field-grid3">${field('Time %','keyframe.'+i+'.at',f.at,'number',null,'min="0" max="100" step="1" '+(i===0||i===frames.length-1?'readonly':''))}${field('X px','keyframe.'+i+'.x',f.x,'number',null,'min="-600" max="600"')}${field('Y px','keyframe.'+i+'.y',f.y,'number',null,'min="-600" max="600"')}${field('Scale','keyframe.'+i+'.scale',f.scale,'number',null,'min="0.1" max="3" step="0.05"')}${field('Rotate °','keyframe.'+i+'.rotate',f.rotate,'number',null,'min="-360" max="360"')}${field('Opacity %','keyframe.'+i+'.opacity',f.opacity,'number',null,'min="0" max="100"')}</div></div>`).join('')}<div class="quick-actions"><button data-action="kf-add" ${frames.length>=12?'disabled':''}>＋ Add middle keyframe</button><button data-action="kf-clear">Remove custom motion</button></div></div>`;
+}
+function scrubCurrent(){
+ const root=$('#sectionStack');if(!root)return;
+ root.querySelectorAll('.sc-motion-surface').forEach(n=>{n.style.removeProperty('transform');n.style.removeProperty('opacity')});
+ if(ui.scrub===null||ui.playing)return;
+ const l=layer(),f=l?.motion?.keyframes;if(!f?.length)return;
+ const k=MOTION_ENGINE().atProgress(f,ui.scrub);
+ const target=Array.from(root.querySelectorAll('.sc-node')).find(n=>n.dataset.node===l.id)?.querySelector('.sc-motion-surface');
+ if(target&&k){target.style.transform=`translate3d(${k.x}px, ${k.y}px, 0) rotate(${k.rotate}deg) scale(${k.scale})`;target.style.opacity=String(k.opacity/100)}
+}
+
 function node(type,name,x,y,w,h,more={}){
  return {id:uid(),type,name,x,y,w,h,z:1,parentId:null,rotation:0,opacity:100,hidden:false,locked:false,fill:'#ffffff',color:'#183522',radius:18,shadow:0,feather:0,blend:'normal',text:'Edit this text',fontSize:35,fontWeight:600,fontFamily:'Georgia, serif',image:'asset:plant',fit:'cover',link:'/collections/all',motion:EMPTY_MOTION(),slides:[{image:'asset:fern',caption:'Inspired by nature'},{image:'asset:detail',caption:'The details matter'},{image:'asset:architecture',caption:'Made to last'}],transition:'fade',autoplay:true,interval:3500,mobile:null,tablet:null,...more};
 }
@@ -56,7 +72,7 @@ function starter(){
  ];
  return {version:2,name:'Botanical concept',settings:{snap:true,haptics:true},sections:[hero,cards,slides]};
 }
-let project=loadProject();let ui={sectionId:project.sections[0]?.id,selectedId:project.sections[0]?.layers[1]?.id,device:'desktop',panel:'elements',tab:'design',playing:false};
+let project=loadProject();let ui={sectionId:project.sections[0]?.id,selectedId:project.sections[0]?.layers[1]?.id,device:'desktop',panel:'elements',tab:'design',playing:false,scrub:null};
 let undoStack=[],redoStack=[],drag=null,slideTimers=[],observer=null,toastTimer=null,slideIndexes={};
 const STORAGE='storecanvas-studio-v02';
 function loadProject(){try{let d=JSON.parse(localStorage.getItem('storecanvas-studio-v02'));if(d?.version===2&&Array.isArray(d.sections)&&d.sections.length)return validateProject(d)}catch(e){}return starter()}
@@ -98,16 +114,19 @@ function renderLayer(s,l,preview=false){
 }
 function stopSlideTimers(){for(const t of slideTimers)clearInterval(t);slideTimers=[];if(observer){observer.disconnect();observer=null}}
 function renderCanvas(){stopSlideTimers();const root=$('#sectionStack');const sSelected=section();if(!sSelected)return;
+ const styles=$('#sc-editor-keyframe-style')||document.head.appendChild(Object.assign(document.createElement('style'),{id:'sc-editor-keyframe-style'}));
+ styles.textContent=project.sections.flatMap(x=>x.layers).filter(n=>n.motion?.keyframes?.length).map(n=>{try{return MOTION_ENGINE().keyframeCSS(n.id,n.motion.keyframes).replace(`.sc-layer-${n.id}.sc-visible>.sc-keyframe-surface`,`[data-node="${n.id}"].sc-motion-active>.sc-motion-surface`)}catch{return ''}}).join('\n');
  root.innerHTML=project.sections.map(s=>`<div class="canvas-section ${s.id===sSelected.id&&!ui.playing?'selected-section':''}" data-section="${esc(s.id)}" style="height:${clamp(dims(s),150,2500,600)}px;background:${sanitizeColor(s.bg,'#ffffff')};border-radius:${clamp(s.radius,0,160,24)}px;overflow:${s.clip===false?'visible':'hidden'}"><span class="section-label">${esc(s.name)}</span>${s.layers.filter(l=>!l.parentId||!findLayer(s,l.parentId)).sort((a,b)=>a.z-b.z).map(l=>renderLayer(s,l)).join('')}</div>`).join('');
  $('#pagePreview').className='page-preview '+ui.device;
  $('#currentSectionName').textContent=sSelected.name;
  $('#editorHint').textContent=ui.playing?'Live preview · hover, click slideshow controls, or test a button · click Stop preview to edit again':'Drag layers on canvas · resize with the corner handle · double-click text to edit · Shift = precise movement';
  $('#app').classList.toggle('playing',ui.playing);$('#playBtn').textContent=ui.playing?'■ Stop preview':'▶ Preview motion';
  if(ui.playing){
-   root.querySelectorAll('.sc-node').forEach(el=>{const l=project.sections.flatMap(s=>s.layers).find(x=>x.id===el.dataset.node);if(!l||l.motion?.enter==='none')return;if(l.motion?.trigger==='scroll')return;el.classList.add('sc-motion-active')});
+   root.querySelectorAll('.sc-node').forEach(el=>{const l=project.sections.flatMap(s=>s.layers).find(x=>x.id===el.dataset.node);if(!l||(l.motion?.enter==='none'&&!l.motion?.keyframes?.length))return;if(l.motion?.trigger==='scroll')return;el.classList.add('sc-motion-active')});
    if('IntersectionObserver' in window){observer=new IntersectionObserver(entries=>{for(const e of entries)if(e.isIntersecting){const l=project.sections.flatMap(s=>s.layers).find(x=>x.id===e.target.dataset.node);if(l?.motion?.trigger==='scroll')e.target.classList.add('sc-motion-active')}},{threshold:.2});root.querySelectorAll('.sc-node').forEach(el=>observer.observe(el));}
    root.querySelectorAll('[data-show-id]').forEach(el=>{const sl=project.sections.flatMap(s=>s.layers).find(x=>x.id===el.dataset.showId);if(sl?.autoplay&&sl.slides?.length>1)slideTimers.push(setInterval(()=>advanceSlide(sl.id,1),clamp(sl.interval,1000,12000,3500)))});
  }
+ scrubCurrent();
 }
 function advanceSlide(id,delta,nextIndex=null){let el=Array.from(document.querySelectorAll('[data-show-id]')).find(x=>x.dataset.showId===id),l=project.sections.flatMap(s=>s.layers).find(x=>x.id===id);if(!el||!l||!l.slides?.length)return;const old=slideIndexes[id]||0;const idx=nextIndex===null?(old+delta+l.slides.length)%l.slides.length:clamp(nextIndex,0,l.slides.length-1,0);slideIndexes[id]=idx;el.querySelectorAll('.sc-slide').forEach((s,i)=>s.classList.toggle('is-active',i===idx));el.querySelectorAll('.sc-dots button').forEach((s,i)=>s.classList.toggle('active',i===idx))}
 function leftPanel(){const root=$('#leftContent');$$('[data-panel]').forEach(b=>b.classList.toggle('active',b.dataset.panel===ui.panel));
@@ -153,7 +172,7 @@ function renderInspector(){const l=layer(),s=section();$('#inspectorTitle').text
  `<div class="insp-group"><h3>Appearance</h3><div class="field-row">${field('Fill','layer.fill',l.fill,'color')}${field('Text color','layer.color',l.color,'color')}</div>${field('Opacity %','layer.opacity',l.opacity,'range',null,'min="0" max="100"')}${field('Shadow blur','layer.shadow',l.shadow,'range',null,'min="0" max="60"')}${l.type==='image'?field('Edge feather','layer.feather',l.feather||0,'range',null,'min="0" max="55"'):''}${field('Blend mode','layer.blend',l.blend,'select',['normal','multiply','screen','darken','lighten'])}</div>`+
  `<div class="insp-group"><h3>Hierarchy & layout</h3>${field('Parent container','layer.parentId',l.parentId||'none','select',['none',...parents.map(x=>x.id)])}<div class="quick-actions"><button data-action="front">Bring to front</button><button data-action="back">Send backward</button><button data-action="center">Center horizontally</button></div>${field('Lock layer','layer.locked',l.locked,'checkbox')}${field('Hide layer','layer.hidden',l.hidden,'checkbox')}<p class="muted-note">Position and size changes made in tablet/mobile view override the desktop layout.</p></div>`;
  }else if(ui.tab==='motion'){
- const m=l.motion||EMPTY_MOTION();html=`<div class="insp-group"><h3>Entrance & scroll effects</h3>${field('Animation preset','motion.enter',m.enter,'select',ENTRANCES)}${field('Trigger','motion.trigger',m.trigger,'select',['load','scroll'])}<div class="field-row">${field('Duration (ms)','motion.duration',m.duration,'number',null,'min="100" max="8000"')}${field('Delay (ms)','motion.delay',m.delay,'number',null,'min="0" max="8000"')}</div>${field('Timing curve','motion.easing',m.easing,'select',EASINGS)}</div><div class="insp-group"><h3>Interaction effects</h3>${field('Hover animation','motion.hover',m.hover,'select',HOVERS)}${field('Touch feedback','motion.haptic',m.haptic,'select',['off','soft','medium'])}${field('Enable project haptics','project.haptics',project.settings.haptics,'checkbox')}<p class="muted-note">Haptic feedback uses the device Vibration API when supported and triggered by user interaction. Unsupported devices receive ordinary visual feedback.</p></div><button class="btn btn-primary" style="width:100%" data-action="preview-motion">▶ Preview animations</button>`;
+ const m=l.motion||EMPTY_MOTION();html=`<div class="insp-group"><h3>Entrance & scroll effects</h3>${field('Animation preset','motion.enter',m.enter,'select',ENTRANCES)}${field('Trigger','motion.trigger',m.trigger,'select',['load','scroll'])}<div class="field-row">${field('Duration (ms)','motion.duration',m.duration,'number',null,'min="100" max="8000"')}${field('Delay (ms)','motion.delay',m.delay,'number',null,'min="0" max="8000"')}</div>${field('Timing curve','motion.easing',m.easing,'select',EASINGS)}</div><div class="insp-group"><h3>Interaction effects</h3>${field('Hover animation','motion.hover',m.hover,'select',HOVERS)}${field('Touch feedback','motion.haptic',m.haptic,'select',['off','soft','medium'])}${field('Enable project haptics','project.haptics',project.settings.haptics,'checkbox')}<p class="muted-note">Haptic feedback uses the device Vibration API when supported and triggered by user interaction. Unsupported devices receive ordinary visual feedback.</p></div>${keyframeWidget(l)}<button class="btn btn-primary" style="width:100%" data-action="preview-motion">▶ Preview animations</button>`;
  }else if(ui.tab==='content'){
  html=`<div class="insp-group"><h3>${esc(l.type.toUpperCase())} content</h3>${field('Layer name','layer.name',l.name)}${['text','button'].includes(l.type)?field('Text','layer.text',l.text,'textarea'):''}${l.type==='button'?field('Destination','layer.link',l.link):''}${['text','button'].includes(l.type)?`<div class="field-row">${field('Font size · '+ui.device,'responsive.fontSize',getFontSize(l),'number',null,'min="8" max="160"')}${field('Font weight','layer.fontWeight',l.fontWeight,'number',null,'min="100" max="900"')}</div>${field('Font family','layer.fontFamily',l.fontFamily,'select',['Georgia, serif','Arial, sans-serif','Inter, sans-serif'])}`:''}${l.type==='image'?field('Image URL / asset','layer.image',l.image):''}${l.type==='image'?uploadField('image'):''}${l.type==='image'?field('Image fit','layer.fit',l.fit,'select',['cover','contain']):''}</div>`;
  if(l.type==='slideshow'){
@@ -164,10 +183,25 @@ function renderInspector(){const l=layer(),s=section();$('#inspectorTitle').text
  $('#inspectorContent').innerHTML=html;
 }
 function uploadField(which,i=''){return `<label class="file-upload">↑ Upload image (PNG, JPEG, WebP, GIF)<input data-upload="${which}" data-index="${i}" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></label>`}
-function renderTimeline(){let s=section(),r=$('#timelineTrack');if(!s)return;let anims=s.layers.filter(x=>x.motion?.enter&&x.motion.enter!=='none');$('#timelineLabel').textContent=anims.length+' animated layers · 100px ≈ 1 second';r.innerHTML=anims.length?anims.map(l=>{const m=l.motion,b=(clamp(m.delay,0,8000,0)/1000)*74,w=Math.max(28,clamp(m.duration,100,8000,800)/1000*74);return `<div class="track-row" data-track="${esc(l.id)}"><span class="track-name">${esc(l.name)}</span><div class="track-line"><span class="track-bar" style="left:${b}px;width:${w}px">${esc(m.enter)}</span></div><span class="track-end">${((m.delay+m.duration)/1000).toFixed(1)}s</span></div>`}).join(''):'<div class="muted-note">Choose a layer and set its entrance animation in Motion properties. Your timeline will appear here.</div>'}
+function renderTimeline(){
+ const s=section(),r=$('#timelineTrack');if(!s)return;
+ const anims=s.layers.filter(x=>(x.motion?.enter&&x.motion.enter!=='none')||x.motion?.keyframes?.length);
+ const selected=layer(),frames=selected?.motion?.keyframes||[];
+ $('#timelineLabel').textContent=anims.length+' animated layers · 100px ≈ 1 second';
+ const controls=frames.length?`<div class="kf-scrubber"><label for="sc-scrub-control">Scrub motion</label><input id="sc-scrub-control" type="range" min="0" max="100" step="1" value="${ui.scrub??0}" aria-label="Preview selected keyframe animation at percentage"><output id="sc-scrub-output">${ui.scrub??0}%</output><button type="button" data-scrub-clear>Reset</button></div>`:'';
+ r.innerHTML=controls+(anims.length?anims.map(l=>{const m=l.motion,b=(clamp(m.delay,0,8000,0)/1000)*74,w=Math.max(28,clamp(m.duration,100,8000,800)/1000*74);return `<div class="track-row" data-track="${esc(l.id)}"><span class="track-name">${esc(l.name)}</span><div class="track-line"><span class="track-bar" style="left:${b}px;width:${w}px">${m.keyframes?.length?'Custom · '+m.keyframes.length+' keys':esc(m.enter)}</span>${(m.keyframes||[]).map(f=>`<span class="track-key" style="left:${b+w*f.at/100}px" title="Keyframe at ${f.at}%"></span>`).join('')}</div><span class="track-end">${((m.delay+m.duration)/1000).toFixed(1)}s</span></div>`}).join(''):'<div class="muted-note">Choose a layer and create a keyframe motion in Motion properties.</div>');
+}
+
 function isDescendant(s,maybeChild,ancestorId){let cur=findLayer(s,maybeChild);let count=0;while(cur?.parentId&&count++<40){if(cur.parentId===ancestorId)return true;cur=findLayer(s,cur.parentId)}return false}
 function reparent(s,l,newParent){if(newParent===l.parentId)return;let old=l.parentId?findLayer(s,l.parentId):null,parent=newParent?findLayer(s,newParent):null;if(parent?.type!=='container'&&newParent)return;if(newParent===l.id||isDescendant(s,newParent,l.id))return notify('Cannot nest a container inside itself');let newX=l.x+(old?old.x:0)-(parent?parent.x:0),newY=l.y+(old?old.y:0)-(parent?parent.y:0);l.parentId=newParent;l.x=Math.max(0,newX);l.y=Math.max(0,newY);l.mobile=null;l.tablet=null}
 function fieldChange(el){const k=el.dataset.field;if(!k)return;const s=section(),l=layer();let v=el.type==='checkbox'?el.checked:el.type==='number'||el.type==='range'?+el.value:el.value;
+ if(l&&k.startsWith('keyframe.')){
+  const [,rawIndex,prop]=k.split('.'),index=Number(rawIndex),draft=clone(l.motion.keyframes||[]);
+  if(!draft[index]||!['at','x','y','scale','rotate','opacity'].includes(prop))return;
+  draft[index][prop]=v;
+  try{MOTION_ENGINE().normalizeFrames(draft)}catch(error){notify(error.message);renderInspector();return}
+  ui.scrub=null;change(()=>{l.motion.keyframes=draft});return;
+ }
  change(()=>{
  if(k==='project.haptics')project.settings.haptics=!!v;
  else if(k.startsWith('section.')){let name=k.slice(8);if(name==='height'){if(ui.device==='mobile')s.mobileHeight=clamp(v,180,2500,600);else if(ui.device==='tablet')s.tabletHeight=clamp(v,180,2500,500);else s.height=clamp(v,180,2500,600)}else if(name==='radius')s.radius=clamp(v,0,120,20);else if(name==='bg')s.bg=sanitizeColor(v,s.bg);else if(name==='name')s.name=String(v).slice(0,90);else if(name==='clip')s.clip=!!v}
@@ -181,6 +215,17 @@ function fieldChange(el){const k=el.dataset.field;if(!k)return;const s=section()
 function duplicateSelected(){const s=section(),l=layer();if(!l)return;let ids=new Set([l.id]);let more=true;while(more){more=false;for(const n of s.layers)if(n.parentId&&ids.has(n.parentId)&&!ids.has(n.id)){ids.add(n.id);more=true}}const cp=s.layers.filter(n=>ids.has(n.id)).map(clone),map={};cp.forEach(n=>map[n.id]=uid());cp.forEach(n=>{const old=n.id;n.id=map[old];n.parentId=n.parentId&&map[n.parentId]?map[n.parentId]:n.parentId;n.x+=n===cp[0]?20:0;n.y+=n===cp[0]?20:0;n.z+=3});change(()=>{s.layers.push(...cp);ui.selectedId=cp[0].id});notify('Layer duplicated')}
 function deleteSelected(){const s=section(),l=layer();if(!l)return;let ids=new Set([l.id]),more=true;while(more){more=false;for(const n of s.layers)if(n.parentId&&ids.has(n.parentId)&&!ids.has(n.id)){ids.add(n.id);more=true}}change(()=>{s.layers=s.layers.filter(x=>!ids.has(x.id));ui.selectedId=s.layers.at(-1)?.id||null});notify('Layer deleted')}
 function actionClick(type,index){const s=section(),l=layer();if(type==='new-section')return newSectionAction();if(type==='preview-motion')return togglePlay(true);if(!l)return;
+ if(type==='kf-enable')return change(()=>{l.motion.keyframes=clone(MOTION_ENGINE().DEFAULT_FRAMES||[{at:0,x:0,y:24,scale:0.96,rotate:0,opacity:0},{at:100,x:0,y:0,scale:1,rotate:0,opacity:100}]);l.motion.enter='none';ui.scrub=null});
+ if(type==='kf-clear')return change(()=>{l.motion.keyframes=[];ui.scrub=null});
+ if(type==='kf-remove'&&index>0&&index<(l.motion.keyframes?.length||0)-1)return change(()=>{l.motion.keyframes.splice(index,1);ui.scrub=null});
+ if(type==='kf-add'){
+  const frames=l.motion.keyframes||[];if(frames.length<2||frames.length>=12)return;
+  const longest=frames.slice(1).map((f,i)=>({i:i+1,gap:f.at-frames[i].at})).sort((a,b)=>b.gap-a.gap)[0];
+  if(!longest||longest.gap<=1)return notify('No room between keyframes');
+  const midway=Math.floor((frames[longest.i-1].at+frames[longest.i].at)/2),frame=MOTION_ENGINE().atProgress(frames,midway);
+  return change(()=>{l.motion.keyframes.splice(longest.i,0,frame);ui.scrub=null});
+ }
+
  if(type==='front')return change(()=>{l.z=Math.max(1,...s.layers.map(x=>x.z||1))+1});
  if(type==='back')return change(()=>{l.z=Math.max(0,l.z-1)});
  if(type==='center')return change(()=>{let b=boundBox(l);b.x=Math.round(((l.parentId?boundBox(findLayer(s,l.parentId)).w:DEVICES[ui.device])-b.w)/2);updateBox(l,b)});
@@ -189,7 +234,7 @@ function actionClick(type,index){const s=section(),l=layer();if(type==='new-sect
  if(type==='slide-up'&&index>0)return change(()=>{[l.slides[index-1],l.slides[index]]=[l.slides[index],l.slides[index-1]]});
  if(type==='slide-down'&&index<l.slides.length-1)return change(()=>{[l.slides[index+1],l.slides[index]]=[l.slides[index],l.slides[index+1]]});
 }
-function togglePlay(force=null){ui.playing=force===null?!ui.playing:!!force;renderCanvas();$('#playBtn').textContent=ui.playing?'■ Stop preview':'▶ Preview motion';notify(ui.playing?'Live motion preview running':'Returned to editing')}
+function togglePlay(force=null){ui.playing=force===null?!ui.playing:!!force;ui.scrub=null;renderCanvas();$('#playBtn').textContent=ui.playing?'■ Stop preview':'▶ Preview motion';notify(ui.playing?'Live motion preview running':'Returned to editing')}
 function importLegacy(data){let sections=(data.sections||data).map((old,i)=>{let s=newSection((old.content?.title||old.type||'Legacy section').split('\n')[0].slice(0,45),old.type==='hero'?600:500,old.style?.bg||'#f1f2ed');s.layers=[node('text','Heading',50,75,530,150,{text:old.content?.title||'Welcome',fontSize:50,mobile:{x:20,y:45,w:340,h:150}}),node('text','Body',50,270,495,90,{text:old.content?.body||'',fontSize:18,fontFamily:'Arial, sans-serif',mobile:{x:20,y:205,w:340,h:95}}),node('image','Image',595,40,430,410,{image:String(old.content?.image||'builtin:plant').replace('builtin:','asset:'),radius:old.style?.imageRadius||20,mobile:{x:20,y:335,w:340,h:300}})];return s});return {version:2,name:'Imported v0.1 project',settings:{snap:true,haptics:false},sections}}
 function validateProject(d){if(!Array.isArray(d.sections)||!d.sections.length||d.sections.length>40)throw Error('Project must contain 1–40 sections');d.name=String(d.name||'Imported project').slice(0,120);d.settings=d.settings||{};d.settings.snap=!!d.settings.snap;d.settings.haptics=!!d.settings.haptics;let layerCount=0,seen=new Set();for(const s of d.sections){if(!s.id||!Array.isArray(s.layers)||s.layers.length>100)throw Error('Invalid section or too many layers');s.height=clamp(s.height,180,2500,500);s.mobileHeight=clamp(s.mobileHeight,180,2500,720);s.tabletHeight=clamp(s.tabletHeight,180,2500,500);s.bg=sanitizeColor(s.bg,'#fff');s.clip=s.clip!==false;s.name=String(s.name||'Section').slice(0,80);for(const l of s.layers){if(!l.id||seen.has(l.id)||!TYPES.some(t=>t[0]===l.type))throw Error('Invalid or duplicate layer');seen.add(l.id);layerCount++;for(let k of ['x','y','w','h','z','rotation','radius','fontSize','opacity'])l[k]=clamp(l[k],k==='x'||k==='y'?-1500:0,3000,0);l.name=String(l.name||l.type).slice(0,100);l.text=String(l.text||'').slice(0,2000);l.image=String(l.image||'asset:plant').slice(0,6000000);l.motion={...EMPTY_MOTION(),...l.motion};l.slides=Array.isArray(l.slides)?l.slides.slice(0,16):[];if(l.parentId&&l.parentId===l.id)l.parentId=null}}
  if(layerCount>800)throw Error('Too many layers in project');for(const s of d.sections){for(const l of s.layers){const visited=new Set([l.id]);let p=l.parentId,depth=0;while(p){if(visited.has(p)||depth++>12){l.parentId=null;break}visited.add(p);const parent=s.layers.find(x=>x.id===p);if(!parent||parent.type!=='container'){l.parentId=null;break}p=parent.parentId}}}return d}
@@ -218,7 +263,8 @@ function bindEvents(){
  $('#inspectorContent').addEventListener('click',e=>{let act=e.target.closest('[data-action]');if(act)actionClick(act.dataset.action,+act.dataset.index||0)});
  $('#sectionStack').addEventListener('pointerdown',pointerStart);$('#sectionStack').addEventListener('dblclick',startInlineEdit);
  $('#sectionStack').addEventListener('click',e=>{if(ui.playing){let act=e.target.closest('[data-action]'),node=e.target.closest('.sc-node');if(act&&node){const l=project.sections.flatMap(s=>s.layers).find(x=>x.id===node.dataset.node);if(!l)return;if(act.dataset.action==='slide-next')advanceSlide(l.id,1);else if(act.dataset.action==='slide-prev')advanceSlide(l.id,-1);else if(act.dataset.action==='slide-dot')advanceSlide(l.id,0,+act.dataset.index);else if(act.dataset.action==='button'){e.preventDefault();notify('Storefront link: '+safeLink(l.link))}if(l.motion?.haptic!=='off')haptic(l.motion.haptic)}else if(e.target.closest('a'))e.preventDefault();return}let sec=e.target.closest('.canvas-section');if(sec&&!e.target.closest('.sc-node')){ui.sectionId=sec.dataset.section;ui.selectedId=null;renderAll()}e.preventDefault()});
- $('#timelineTrack').onclick=e=>{const track=e.target.closest('[data-track]');if(track){ui.selectedId=track.dataset.track;ui.tab='motion';renderAll()}};
+ $('#timelineTrack').onclick=e=>{const reset=e.target.closest('[data-scrub-clear]');if(reset){ui.scrub=null;renderTimeline();return scrubCurrent()}const track=e.target.closest('[data-track]');if(track){ui.selectedId=track.dataset.track;ui.scrub=null;ui.tab='motion';renderAll()}};
+ $('#timelineTrack').addEventListener('input',e=>{if(e.target.id==='sc-scrub-control'){ui.scrub=clamp(+e.target.value,0,100,0);const output=$('#sc-scrub-output');if(output)output.textContent=ui.scrub+'%';scrubCurrent()}});
  document.addEventListener('keydown',handleKey);
 }
 renderAll();bindEvents();saveLocal();

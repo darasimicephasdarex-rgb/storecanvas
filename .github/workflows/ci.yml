@@ -23,11 +23,9 @@ jobs:
         run: npm run build:theme
       - name: Validate generated theme structure and hashes
         run: npm run check:theme
-      - name: Python syntax check for optional Chromium regression
-        run: python3 -m py_compile tests/high_variant_browser.py
       - name: Safe live-storefront QA runner self-test (offline)
         run: |
-          python3 -m py_compile tests/live_storefront_smoke.py
+          python3 -m py_compile tests/live_storefront_smoke.py tests/keyframes_browser.py tests/browser_check.py
           python3 tests/live_storefront_smoke.py --self-test
       - name: Official Shopify Theme Check
         uses: shopify/theme-check-action@v2

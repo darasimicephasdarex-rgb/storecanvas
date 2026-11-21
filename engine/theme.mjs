@@ -3,7 +3,7 @@
 import {renderPreview, escapeHTML} from './core.mjs';
 import {BUILTIN_IMAGES} from './builtin-images.mjs';
 import {PRODUCT_SECTION, CART_SECTION, COMMERCE_JS} from './commerce.mjs';
-import {STORECANVAS_STRINGS,validateTranslations} from './locales.mjs';
+import {STORECANVAS_STRINGS, validateTranslations} from './locales.mjs';
 
 const schema = json => `{% schema %}${JSON.stringify(json)}{% endschema %}`;
 const section = (name, body) => `${body}\n${schema({name, settings:[], presets:[{name}]})}`;
@@ -22,7 +22,7 @@ body{margin:0;color:#183522;background:#fff;font-family:Arial,sans-serif}
 @media(max-width:700px){.sc-product-main{grid-template-columns:1fr}.sc-site-header{align-items:flex-start;flex-direction:column}}
 `;
 const header = section('StoreCanvas header', `<header class="sc-site-header"><a href="{{ routes.root_url }}" aria-label="{{ 'storecanvas.accessibility.store_home' | t: name: shop.name | escape }}"><strong>{{ shop.name | escape }}</strong></a><nav class="sc-site-nav" aria-label="{{ 'storecanvas.navigation.main' | t | escape }}"><a href="{{ routes.root_url }}">{{ 'storecanvas.navigation.home' | t }}</a><a href="{{ routes.all_products_collection_url }}">{{ 'storecanvas.navigation.shop' | t }}</a><a href="{{ routes.cart_url }}">{{ 'storecanvas.navigation.cart' | t: count: cart.item_count }}</a></nav></header>`);
-const footer = section('StoreCanvas footer', `<footer class="sc-site-footer"><span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name | escape }}</span><a href="{{ routes.root_url }}">Home</a></footer>`);
+const footer = section('StoreCanvas footer', `<footer class="sc-site-footer"><span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name | escape }}</span><a href="{{ routes.root_url }}">{{ 'storecanvas.navigation.home' | t }}</a></footer>`);
 const product = section('StoreCanvas product', PRODUCT_SECTION);
 const collection = section('StoreCanvas collection', `<div class="sc-commerce"><h1>{{ collection.title | escape }}</h1><div>{{ collection.description }}</div>{% paginate collection.products by 24 %}<div class="sc-commerce-grid">{% for p in collection.products %}<a href="{{ p.url }}">{% if p.featured_image %}{{ p.featured_image | image_url: width: 640 | image_tag: loading: 'lazy' }}{% endif %}<h2>{{ p.title | escape }}</h2><p>{{ p.price | money }}</p></a>{% endfor %}</div>{{ paginate | default_pagination }}{% endpaginate %}</div>`);
 const cart = section('StoreCanvas cart', CART_SECTION);
@@ -77,7 +77,7 @@ export function compileShopifyTheme(project){
  for(const [name,body] of Object.entries(sections))files.set(`sections/${name}.liquid`,body);
  const templates={index:'storecanvas-home',product:'main-product',collection:'main-collection',cart:'main-cart',page:'main-page',search:'main-search','404':'main-404'};
  for(const [name,sectionName] of Object.entries(templates))files.set(`templates/${name}.json`,template(sectionName));
- files.set('config/settings_schema.json',JSON.stringify([{name:'theme_info',theme_name:'StoreCanvas Starter',theme_author:'StoreCanvas',theme_version:'0.9.0',theme_documentation_url:'https://shopify.dev/docs/storefronts/themes',theme_support_url:'https://shopify.dev/'}]));
+ files.set('config/settings_schema.json',JSON.stringify([{name:'theme_info',theme_name:'StoreCanvas Starter',theme_author:'StoreCanvas',theme_version:'0.10.0',theme_documentation_url:'https://shopify.dev/docs/storefronts/themes',theme_support_url:'https://shopify.dev/'}]));
  files.set('locales/en.default.json',JSON.stringify({storecanvas:STORECANVAS_STRINGS.en}));
  files.set('locales/es.json',JSON.stringify({storecanvas:STORECANVAS_STRINGS.es}));
  return files;
