@@ -1,25 +1,33 @@
-# StoreCanvas v0.4 release gates
+# StoreCanvas v0.5 release gates (November 21, 2026)
 
-## Verified locally
-- Source-specific compatibility validation for v0.3 designs
-- Semantic HTML preview compiler for static, image, button, container and slideshow nodes
-- Escaping of authored text and safe URL protocol validation
-- Breakpoint CSS generation, parent cycle and size checks
-- Reduced motion, slideshow pause controls and keyboard-accessible buttons
-- Node.js built-in test runner (no paid or runtime dependencies)
+Checked = supported by a code change and a corresponding test or Shopify connector result; not a promise of a complete commercial product.
 
-## Must pass before production
-- Validate the **actual exported Shopify ZIP** with Shopify Theme Check and a real unpublished theme.
-- Confirm product options, inventory, cart/checkout, locale, accessibility and theme-editor interactions.
-- Harden uploads, data URLs, media sizing, input parsing and stored-content limits.
-- Integrate the validated engine into the editor and exporter; existing v0.3 exporter remains separate.
-- Add browser integration and visual regression tests at 390/768/1440px.
-- Validate an app-specific installation, sessions, tenant isolation, compliance webhooks and data deletion.
-- Verify API permissions for any automated theme writes; request exemption where necessary.
-- Configure live hosting, observability, backups and recovery.
-- Require explicit merchant approval before publishing the live theme.
+## Foundation and reproducibility
+- [x] GitHub repository, development branch and draft PR
+- [x] Source for freeform canvas, responsive positions, nested layers, motion and slideshows
+- [x] Validated v0.3/v0.4 design schema and safe URL/document limits
+- [x] Shared homepage renderer for browser preview and Shopify export
+- [x] Exported illustration/upload images packaged as theme assets
+- [x] ZIP packer with CRC32 and unit checks
+- [x] Browser-compatible runtime generated from engine modules without dependencies
+- [x] Browser editor wired to the unified compiler
+- [ ] Latest GitHub Actions CI green (verify after push)
 
-## Restrictions
-GitHub branch pushes and commits are development artifacts, not Shopify production deployment.
-The connected store's unpublished Horizon test theme is not the same code path as the offline exported ZIP.
-Never claim a production release from passing unit tests alone.
+## Shopify verification
+- [x] Previous isolated freeform section on unpublished Horizon test theme
+- [ ] New v0.5 ZIP uploaded to Shopify test theme and validated with Theme Check
+- [ ] Full product/variant/cart/checkout/SEO/localization/accessibility tests
+- [ ] Multi-theme compatibility, responsive breakpoints and performance budgets
+- [ ] Approved theme-write permissions where automated theme file modifications are used
+- [ ] Versioned publishing, rollback and failure recovery
+
+## Production application
+- [ ] Shopify app scaffold and OAuth sessions
+- [ ] Multi-tenant data separation, database and secure asset storage
+- [ ] Compliance and uninstall webhooks, data deletion and privacy policy
+- [ ] Observability, backups, rate limiting, audit logging and end-to-end QA
+- [ ] Hosting and Shopify App Store approval (costs may apply)
+
+## Notes
+The new generated ZIP is a *separate starter theme*, not a patch for any merchant's existing live theme.
+Passing Node or browser tests does not prove Shopify approval. The live B-Bless Collections theme was not modified.
