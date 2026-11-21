@@ -70,3 +70,12 @@ test('classic browser runtime produces same section output as ESM',()=>{
  const browser={};vm.runInNewContext(script,{window:browser,Blob,TextEncoder,TextDecoder,URL,atob,console},{timeout:1500});
  assert.equal(browser.StoreCanvasEngine.compileShopifyTheme(sample()).get('sections/storecanvas-home.liquid'),home(compileShopifyTheme(sample())));
 });
+
+test('exported images reserve size and collection links use Shopify market-aware routes',()=>{
+ const files=compileShopifyTheme(sample);const content=String(files.get('sections/storecanvas-home.liquid'));
+ const imgs=[...content.matchAll(/<img\s[^>]*>/g)].map(m=>m[0]);
+ assert.ok(imgs.length>=4,'Expected actual visual assets');
+ for(const img of imgs){assert.match(img,/\bwidth="\d+"/);assert.match(img,/\bheight="\d+"/)}
+ assert.ok(content.includes('{{ routes.all_products_collection_url }}'));
+ assert.ok(!content.includes('href="/collections/all"'));
+});
