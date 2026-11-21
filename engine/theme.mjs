@@ -44,7 +44,9 @@ function replaceMedia(html,files){
  const builtIn=/<span class="sc-media-placeholder" aria-hidden="true" data-sc-asset="([A-Za-z0-9_-]+)"><\/span>/g;
  result=result.replace(builtIn,(_,name)=>{const svg=BUILTIN_IMAGES[name];if(!svg)throw Error(`Unknown bundled asset: ${name}`);
  const filename=`storecanvas-${name}.svg`;files.set(`assets/${filename}`,svg);
- return `<img loading="lazy" decoding="async" alt="Botanical illustration" src="{{ '${filename}' | asset_url }}">`;});
+ const view=svg.match(/viewBox="0 0 (\d+) (\d+)"/);
+ const width=view?Number(view[1]):640,height=view?Number(view[2]):600;
+ return `<img loading="lazy" decoding="async" width="${width}" height="${height}" alt="Botanical illustration" src="{{ '${filename}' | asset_url }}">`;});
  let uploaded=0;const assetNames=new Map();
  result=result.replace(/src="(data:image\/(?:png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+)"/gi,(original,url)=>{
    if(!assetNames.has(url)){
@@ -55,7 +57,9 @@ function replaceMedia(html,files){
  });
  // Unresolved image data URLs would bloat templates or leak data; block instead.
  if(/data:image\/|data-sc-asset=/.test(result))throw Error('Unresolved image source in export');
- return result;
+ // Shopify route objects preserve language and market-specific paths.
+ return result.replace(/href="\/collections\/all"/g,'href="{{ routes.all_products_collection_url }}"')
+   .replace(/href="\/cart"/g,'href="{{ routes.cart_url }}"');
 }
 
 export function compileShopifyTheme(project){
