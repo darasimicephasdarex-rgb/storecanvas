@@ -56,3 +56,16 @@ No live theme publishing performed. App deployment not begun. GitHub draft PR is
 - [x] Inactive slideshow figures receive `aria-hidden=true` while active figures are perceivable.
 - [x] Local Chromium test verifies autoplay, hover pause, keyboard focus pause, pointer/focus resume and explicit Pause/Play.
 - [ ] Broader screen-reader audits, touch-device testing and large breakpoint visual regression remain outstanding.
+
+## v0.8 verified release gates — 2026-11-21
+- [x] Shopify 250+ variant strategy implemented with `product.options_with_values` and server-side option selection.
+- [x] Invalid/stale purchase guard and manual retry implemented.
+- [x] 25 local Node tests, offline Chromium regression and generated ZIP structure checks passed.
+- [x] GitHub Actions CI and official Theme Check error gate passed on v0.8 commit `4a00b31f`.
+- [x] Exact v0.7 26-file independent ZIP imported by Shopify `themeCreate`, with no user errors, as a new unpublished theme.
+- [x] Imported theme's product section, CSS and JS upgraded to v0.8, saved without errors.
+- [x] Desktop/mobile screenshot requests completed for homepage/product, plus collection desktop and cart mobile.
+- [ ] Actual Shopify product option click, add-to-cart, cart quantity and checkout handoff verified on isolated development store.
+- [ ] Full independent v0.8 ZIP import as one unmodified archive (v0.7 archive imported then upgraded in place).
+- [ ] Real 250+ variants and combined listing tests, translated UI and selling-plan QA.
+- [ ] Public app OAuth, data isolation, rollback, hosting, webhooks and production approval.

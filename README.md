@@ -66,3 +66,11 @@ Run locally: `npm run check && npm test && npm run build:theme && npm run check:
 
 ### Slideshow interaction QA
 The generated storefront now animates `fade`, `slide`, and `zoom` transitions. Autoplay respects pointer hover, keyboard focus, explicit Pause, tab visibility and reduced-motion preferences. Inactive slides are marked as hidden from assistive technologies. An optional Chromium test is available via `python tests/slideshow_browser.py` (requires Playwright/Chromium on your own machine); CI executes the dependency-free Node tests.
+
+## v0.8 — Shopify option-value selectors and independent QA theme
+
+The generated product template now uses `product.options_with_values` and the Shopify Section Rendering API, so it does not enumerate the capped `product.variants` list. Invalid combinations, failed requests, and in-progress selections cannot submit stale product variant IDs. A retry control and focused status announcement provide recovery.
+
+The independent 26-file theme ZIP was successfully imported through Shopify's `themeCreate` as an **UNPUBLISHED** test theme, and then its product section and commerce assets were updated to v0.8. Desktop and mobile preview requests succeeded for homepage, product, cart and collection pages. No checkout order or payment was placed.
+
+See `docs/INDEPENDENT_THEME_IMPORT_V08.md` for exact acceptance evidence and `docs/HIGH_VARIANT_QA_2026-11-21.md` for remaining risks. All code remains free-first.

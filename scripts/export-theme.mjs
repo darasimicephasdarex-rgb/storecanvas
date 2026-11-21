@@ -17,7 +17,7 @@ export async function exportFixture(){
   // This is a fixed generated path, never a user-provided delete target.
   fs.rmSync(themeRoot,{recursive:true,force:true});
   fs.mkdirSync(themeRoot,{recursive:true});
-  const manifest={format:'StoreCanvas QA manifest',version:'0.7.0',files:{}};
+  const manifest={format:'StoreCanvas QA manifest',version:'0.8.0',files:{}};
   for(const [relative,data] of files){
     if(!/^(?:layout|templates|sections|snippets|assets|config|locales)\/[a-zA-Z0-9._/-]+$/.test(relative)||relative.includes('..'))throw Error('Invalid generated path: '+relative);
     const out=path.resolve(themeRoot,relative);
