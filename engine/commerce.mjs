@@ -1,3 +1,6 @@
+/** StoreCanvas commerce primitives for the generated independent starter theme.
+ * Server-rendered Liquid is the source of truth. JS progressively updates product
+ * variant price/media/quantity and never bypasses native Shopify forms. */
 export const PRODUCT_SECTION = String.raw`{% liquid
   assign active_variant = product.selected_or_first_available_variant
   assign active_image = active_variant.featured_image | default: product.featured_image
@@ -86,6 +89,8 @@ export const CART_SECTION = String.raw`<section class="sc-commerce sc-cart" aria
 </section>`;
 
 export const COMMERCE_JS = String.raw`(()=>{'use strict';
+// Shopify option value selection supports more than 250 variants without enumerating product.variants.
+// Never modify cart/order state: the native product form remains the only add-to-cart path.
 const inflight=new WeakMap();
 const message=(root,key)=>root.dataset['scMsg'+key.charAt(0).toUpperCase()+key.slice(1)]||'';
 document.addEventListener('submit',event=>{const root=event.target.closest?.('[data-sc-product]');if(!root)return;const id=root.querySelector('[data-sc-variant-id]')?.value; if(root.getAttribute('aria-busy')==='true'||root.dataset.scSelectionError==='true'||!id||root.querySelector('[data-sc-add]')?.disabled){event.preventDefault();announce(root,message(root,'blocked'));}});
