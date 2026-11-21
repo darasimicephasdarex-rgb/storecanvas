@@ -74,3 +74,6 @@ The generated product template now uses `product.options_with_values` and the Sh
 The independent 26-file theme ZIP was successfully imported through Shopify's `themeCreate` as an **UNPUBLISHED** test theme, and then its product section and commerce assets were updated to v0.8. Desktop and mobile preview requests succeeded for homepage, product, cart and collection pages. No checkout order or payment was placed.
 
 See `docs/INDEPENDENT_THEME_IMPORT_V08.md` for exact acceptance evidence and `docs/HIGH_VARIANT_QA_2026-11-21.md` for remaining risks. All code remains free-first.
+
+## v0.9 — localized Shopify commerce
+The generated Shopify theme now includes English and Spanish storefront locale catalogs. Native Liquid translation keys are used for product forms, status/errors, cart labels, navigation, search and accessibility. Dynamic variant feedback is supplied by the current translated product section. Stale, empty and disabled variant states cannot be submitted. Run npm run check, npm test, npm run build:theme and npm run check:theme; this does not certify real Shopify checkout.

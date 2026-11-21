@@ -19,6 +19,16 @@ export function auditTheme(rootDir,manifestPath){
    if(hash!==info.sha256||bytes.length!==info.bytes)fail.push(`File altered ${relative}`);
  }
  requireFile('layout/theme.liquid');
+ const locales=['locales/en.default.json','locales/es.json'];
+ const catalogs=new Map();
+ for(const lang of locales){try{catalogs.set(lang,JSON.parse(requireFile(lang)||'INVALID'))}catch(error){fail.push('Invalid locale '+lang+': '+error.message)}}
+ for(const [relative] of Object.entries(manifest.files))if(relative.endsWith('.liquid')){
+  const source=requireFile(relative);if(!source)continue;
+  for(const match of source.matchAll(/['"]storecanvas\.([a-z_]+\.[a-z_]+)['"]\s*\|\s*t\b/g)){
+   for(const [locale,translations] of catalogs){const [group,key]=match[1].split('.');if(typeof translations?.storecanvas?.[group]?.[key]!=='string')fail.push('Missing translation '+match[1]+' in '+locale)}
+  }
+ }
+
  for(const [dir,name] of [['config','settings_schema.json'],['locales','en.default.json']]){
    try{JSON.parse(requireFile(`${dir}/${name}`)||'INVALID')}catch(e){fail.push(`Invalid JSON ${dir}/${name}: ${e.message}`)}
  }

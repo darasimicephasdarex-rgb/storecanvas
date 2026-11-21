@@ -69,3 +69,11 @@ No live theme publishing performed. App deployment not begun. GitHub draft PR is
 - [ ] Full independent v0.8 ZIP import as one unmodified archive (v0.7 archive imported then upgraded in place).
 - [ ] Real 250+ variants and combined listing tests, translated UI and selling-plan QA.
 - [ ] Public app OAuth, data isolation, rollback, hosting, webhooks and production approval.
+
+## v0.9 localization and commerce
+- [x] English/Spanish locale catalogs and matching interpolation variable checks.
+- [x] Option-value selection messages use translated section data.
+- [x] Product form prevents stale, empty, disabled selections.
+- [x] Unit tests and offline browser regressions updated.
+- [ ] GitHub Theme Check and fresh ZIP import require separate acceptance.
+- [ ] Real cart-to-checkout testing, selling plans, multi-store OAuth and publishing remain incomplete.

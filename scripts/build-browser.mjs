@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const modules=['engine/core.mjs','engine/builtin-images.mjs','engine/commerce.mjs','engine/theme.mjs','engine/zip.mjs'];
+const modules=['engine/core.mjs','engine/builtin-images.mjs','engine/commerce.mjs','engine/locales.mjs','engine/theme.mjs','engine/zip.mjs'];
 let out='/* StoreCanvas generated runtime. Edit engine/*.mjs and run npm run build:browser. */\n(()=>{\'use strict\';\n';
 for(const name of modules){let source=fs.readFileSync(path.join(root,name),'utf8');
  source=source.replace(/^import\s+\{[^\n]+\}\s+from\s+['"][^'"]+['"];?\s*$/gm,'').replace(/^export\s+/gm,'');

@@ -3,6 +3,7 @@
 import {renderPreview, escapeHTML} from './core.mjs';
 import {BUILTIN_IMAGES} from './builtin-images.mjs';
 import {PRODUCT_SECTION, CART_SECTION, COMMERCE_JS} from './commerce.mjs';
+import {STORECANVAS_STRINGS,validateTranslations} from './locales.mjs';
 
 const schema = json => `{% schema %}${JSON.stringify(json)}{% endschema %}`;
 const section = (name, body) => `${body}\n${schema({name, settings:[], presets:[{name}]})}`;
@@ -20,14 +21,14 @@ body{margin:0;color:#183522;background:#fff;font-family:Arial,sans-serif}
 .sc-cart-row{display:flex;align-items:center;gap:22px;border-bottom:1px solid #ddd;padding:18px 0}.sc-cart-row img{width:84px;height:98px;object-fit:cover}
 @media(max-width:700px){.sc-product-main{grid-template-columns:1fr}.sc-site-header{align-items:flex-start;flex-direction:column}}
 `;
-const header = section('StoreCanvas header', `<header class="sc-site-header"><a href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }} home"><strong>{{ shop.name | escape }}</strong></a><nav class="sc-site-nav" aria-label="Main navigation"><a href="{{ routes.root_url }}">Home</a><a href="{{ routes.all_products_collection_url }}">Shop</a><a href="{{ routes.cart_url }}">Cart ({{ cart.item_count }})</a></nav></header>`);
+const header = section('StoreCanvas header', `<header class="sc-site-header"><a href="{{ routes.root_url }}" aria-label="{{ 'storecanvas.accessibility.store_home' | t: name: shop.name | escape }}"><strong>{{ shop.name | escape }}</strong></a><nav class="sc-site-nav" aria-label="{{ 'storecanvas.navigation.main' | t | escape }}"><a href="{{ routes.root_url }}">{{ 'storecanvas.navigation.home' | t }}</a><a href="{{ routes.all_products_collection_url }}">{{ 'storecanvas.navigation.shop' | t }}</a><a href="{{ routes.cart_url }}">{{ 'storecanvas.navigation.cart' | t: count: cart.item_count }}</a></nav></header>`);
 const footer = section('StoreCanvas footer', `<footer class="sc-site-footer"><span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name | escape }}</span><a href="{{ routes.root_url }}">Home</a></footer>`);
 const product = section('StoreCanvas product', PRODUCT_SECTION);
 const collection = section('StoreCanvas collection', `<div class="sc-commerce"><h1>{{ collection.title | escape }}</h1><div>{{ collection.description }}</div>{% paginate collection.products by 24 %}<div class="sc-commerce-grid">{% for p in collection.products %}<a href="{{ p.url }}">{% if p.featured_image %}{{ p.featured_image | image_url: width: 640 | image_tag: loading: 'lazy' }}{% endif %}<h2>{{ p.title | escape }}</h2><p>{{ p.price | money }}</p></a>{% endfor %}</div>{{ paginate | default_pagination }}{% endpaginate %}</div>`);
 const cart = section('StoreCanvas cart', CART_SECTION);
 const page = section('StoreCanvas page', '<article class="sc-commerce"><h1>{{ page.title | escape }}</h1>{{ page.content }}</article>');
-const search = section('StoreCanvas search', `<div class="sc-commerce"><h1>Search</h1><form method="get" action="{{ routes.search_url }}"><label for="sc-search">Search products</label><input id="sc-search" name="q" type="search" value="{{ search.terms | escape }}"><button class="sc-cta" type="submit">Search</button></form><div class="sc-commerce-grid">{% for p in search.results %}<a href="{{ p.url }}">{% if p.featured_image %}{{ p.featured_image | image_url: width: 640 | image_tag: loading: 'lazy' }}{% endif %}<h2>{{ p.title | escape }}</h2></a>{% endfor %}</div></div>`);
-const notFound = section('StoreCanvas 404', '<div class="sc-commerce"><h1>Page not found</h1><a class="sc-cta" href="{{ routes.root_url }}">Go home</a></div>');
+const search = section('StoreCanvas search', `<div class="sc-commerce"><h1>{{ 'storecanvas.search.title' | t }}</h1><form method="get" action="{{ routes.search_url }}"><label for="sc-search">{{ 'storecanvas.search.label' | t }}</label><input id="sc-search" name="q" type="search" value="{{ search.terms | escape }}"><button class="sc-cta" type="submit">{{ 'storecanvas.search.submit' | t }}</button></form><div class="sc-commerce-grid">{% for p in search.results %}<a href="{{ p.url }}">{% if p.featured_image %}{{ p.featured_image | image_url: width: 640 | image_tag: loading: 'lazy' }}{% endif %}<h2>{{ p.title | escape }}</h2></a>{% endfor %}</div></div>`);
+const notFound = section('StoreCanvas 404', `<div class="sc-commerce"><h1>{{ 'storecanvas.errors.not_found' | t }}</h1><a class="sc-cta" href="{{ routes.root_url }}">{{ 'storecanvas.errors.go_home' | t }}</a></div>`);
 
 const ALLOWED_IMG = new Set(['png','jpeg','webp','gif']);
 function decodeImage(uri){const match=/^data:image\/(png|jpeg|webp|gif);base64,([A-Za-z0-9+/=]+)$/i.exec(uri);
@@ -65,17 +66,19 @@ function replaceMedia(html,files){
 }
 
 export function compileShopifyTheme(project){
+ validateTranslations();
  const preview=renderPreview(project); // validates before any generated file
  const files=new Map(); const homeHtml=replaceMedia(preview.html,files);
  const liquid=section('StoreCanvas homepage',`<main class="sc-page">${homeHtml}</main>`);
  if(new TextEncoder().encode(liquid).length>230000)throw Error('Homepage exceeds safe Shopify section size; split it into pages');
- files.set('layout/theme.liquid',`<!doctype html><html lang="{{ request.locale.iso_code }}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ page_title | escape }} – {{ shop.name | escape }}</title>{{ content_for_header }}{{ 'storecanvas.css' | asset_url | stylesheet_tag }}<script>window.SC_HAPTICS_ENABLED=${preview.document.settings.haptics?'true':'false'};</script><script src="{{ 'storecanvas.js' | asset_url }}" defer></script><script src="{{ 'storecanvas-commerce.js' | asset_url }}" defer></script></head><body><a class="sc-skip" href="#MainContent">Skip to content</a>{% section 'storecanvas-header' %}<div id="MainContent">{{ content_for_layout }}</div>{% section 'storecanvas-footer' %}</body></html>`);
+ files.set('layout/theme.liquid',`<!doctype html><html lang="{{ request.locale.iso_code }}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ page_title | escape }} – {{ shop.name | escape }}</title>{{ content_for_header }}{{ 'storecanvas.css' | asset_url | stylesheet_tag }}<script>window.SC_HAPTICS_ENABLED=${preview.document.settings.haptics?'true':'false'};</script><script src="{{ 'storecanvas.js' | asset_url }}" defer></script><script src="{{ 'storecanvas-commerce.js' | asset_url }}" defer></script></head><body><a class="sc-skip" href="#MainContent">{{ 'storecanvas.accessibility.skip_to_content' | t }}</a>{% section 'storecanvas-header' %}<div id="MainContent">{{ content_for_layout }}</div>{% section 'storecanvas-footer' %}</body></html>`);
  files.set('assets/storecanvas.css',preview.css+cssExtra);files.set('assets/storecanvas.js',preview.js);files.set('assets/storecanvas-commerce.js',COMMERCE_JS);
  const sections={'storecanvas-home':liquid,'storecanvas-header':header,'storecanvas-footer':footer,'main-product':product,'main-collection':collection,'main-cart':cart,'main-page':page,'main-search':search,'main-404':notFound};
  for(const [name,body] of Object.entries(sections))files.set(`sections/${name}.liquid`,body);
  const templates={index:'storecanvas-home',product:'main-product',collection:'main-collection',cart:'main-cart',page:'main-page',search:'main-search','404':'main-404'};
  for(const [name,sectionName] of Object.entries(templates))files.set(`templates/${name}.json`,template(sectionName));
- files.set('config/settings_schema.json',JSON.stringify([{name:'theme_info',theme_name:'StoreCanvas Starter',theme_author:'StoreCanvas',theme_version:'0.8.0',theme_documentation_url:'https://shopify.dev/docs/storefronts/themes',theme_support_url:'https://shopify.dev/'}]));
- files.set('locales/en.default.json','{}');
+ files.set('config/settings_schema.json',JSON.stringify([{name:'theme_info',theme_name:'StoreCanvas Starter',theme_author:'StoreCanvas',theme_version:'0.9.0',theme_documentation_url:'https://shopify.dev/docs/storefronts/themes',theme_support_url:'https://shopify.dev/'}]));
+ files.set('locales/en.default.json',JSON.stringify({storecanvas:STORECANVAS_STRINGS.en}));
+ files.set('locales/es.json',JSON.stringify({storecanvas:STORECANVAS_STRINGS.es}));
  return files;
 }

@@ -128,12 +128,18 @@ const PRODUCT_SECTION = String.raw`{% liquid
   assign active_variant = product.selected_or_first_available_variant
   assign active_image = active_variant.featured_image | default: product.featured_image
 %}
-<section class="sc-commerce sc-product-main" data-sc-product data-sc-section-id="{{ section.id }}" data-sc-product-url="{{ product.url | escape }}">
+<section class="sc-commerce sc-product-main" data-sc-product data-sc-section-id="{{ section.id }}" data-sc-product-url="{{ product.url | escape }}"
+  data-sc-msg-loading="{{ 'storecanvas.product.selection_loading' | t | escape }}"
+  data-sc-msg-blocked="{{ 'storecanvas.product.selection_blocked' | t | escape }}"
+  data-sc-msg-incomplete="{{ 'storecanvas.product.selection_incomplete' | t | escape }}"
+  data-sc-msg-updated="{{ 'storecanvas.product.selection_updated' | t | escape }}"
+  data-sc-msg-invalid="{{ 'storecanvas.product.selection_invalid' | t | escape }}"
+  data-sc-msg-failed="{{ 'storecanvas.product.selection_failed' | t | escape }}">
   <div class="sc-product-media">
     {% if active_image != blank %}
       {{ active_image | image_url: width: 1200 | image_tag: loading: 'eager', widths: '360, 720, 960, 1200', alt: product.title }}
     {% else %}
-      <div class="sc-product-placeholder" role="img" aria-label="No product photograph available"></div>
+      <div class="sc-product-placeholder" role="img" aria-label="{{ 'storecanvas.product.no_image' | t | escape }}"></div>
     {% endif %}
   </div>
   <div class="sc-product-info">
@@ -141,7 +147,7 @@ const PRODUCT_SECTION = String.raw`{% liquid
     {% if active_variant != blank %}
       <p class="sc-product-price" data-sc-price>{{ active_variant.price | money }}</p>
     {% else %}
-      <p class="sc-product-price" data-sc-price>Combination unavailable</p>
+      <p class="sc-product-price" data-sc-price>{{ 'storecanvas.product.unavailable' | t }}</p>
     {% endif %}
     <div class="sc-product-description">{{ product.description }}</div>
     {% form 'product', product %}
@@ -152,27 +158,27 @@ const PRODUCT_SECTION = String.raw`{% liquid
             <label for="sc-option-{{ section.id }}-{{ option.position }}">{{ option.name | escape }}</label>
             <select id="sc-option-{{ section.id }}-{{ option.position }}" data-sc-option data-sc-option-index="{{ option.position }}">
               {% for option_value in option.values %}
-                <option value="{{ option_value.name | escape }}" data-sc-option-value-id="{{ option_value.id }}" data-sc-product-url="{{ option_value.product_url | escape }}" {% if option_value.selected %}selected{% endif %}>{{ option_value.name | escape }}{% unless option_value.available %} — unavailable{% endunless %}</option>
+                <option value="{{ option_value.name | escape }}" data-sc-option-value-id="{{ option_value.id }}" data-sc-product-url="{{ option_value.product_url | escape }}" {% if option_value.selected %}selected{% endif %}>{{ option_value.name | escape }}{% unless option_value.available %} — {{ 'storecanvas.product.option_unavailable' | t }}{% endunless %}</option>
               {% endfor %}
             </select>
           {% endfor %}
         </div>
       {% endunless %}
       <input data-sc-variant-id type="hidden" name="id" value="{% if active_variant != blank %}{{ active_variant.id }}{% endif %}">
-      <label for="sc-qty-{{ section.id }}">Quantity</label>
+      <label for="sc-qty-{{ section.id }}">{{ 'storecanvas.product.quantity' | t }}</label>
       <input id="sc-qty-{{ section.id }}" data-sc-quantity type="number" name="quantity" min="{{ active_variant.quantity_rule.min | default: 1 }}" {% if active_variant.quantity_rule.max != blank %}max="{{ active_variant.quantity_rule.max }}"{% endif %} step="{{ active_variant.quantity_rule.increment | default: 1 }}" value="{{ active_variant.quantity_rule.min | default: 1 }}" required {% if active_variant == blank %}disabled{% endif %}>
       <button class="sc-cta" type="submit" name="add" data-sc-add {% unless active_variant.available %}disabled{% endunless %}>
-        {% if active_variant == blank %}Unavailable{% elsif active_variant.available %}Add to cart{% else %}Sold out{% endif %}
+        {% if active_variant == blank %}{{ 'storecanvas.product.unavailable' | t }}{% elsif active_variant.available %}{{ 'storecanvas.product.add_to_cart' | t }}{% else %}{{ 'storecanvas.product.sold_out' | t }}{% endif %}
       </button>
       <p class="sc-visually-hidden" data-sc-status role="status" aria-live="polite" aria-atomic="true"></p>
-      <button type="button" class="sc-cta sc-cta-secondary" data-sc-retry hidden>Retry selection</button>
+      <button type="button" class="sc-cta sc-cta-secondary" data-sc-retry hidden>{{ 'storecanvas.product.retry' | t }}</button>
     {% endform %}
   </div>
 </section>`;
 const CART_SECTION = String.raw`<section class="sc-commerce sc-cart" aria-labelledby="sc-cart-title">
-  <h1 id="sc-cart-title">Your cart</h1>
+  <h1 id="sc-cart-title">{{ 'storecanvas.cart.title' | t }}</h1>
   {% if cart.item_count == 0 %}
-    <p>Your cart is empty. <a href="{{ routes.all_products_collection_url }}">Continue shopping</a>.</p>
+    <p>{{ 'storecanvas.cart.empty' | t }} <a href="{{ routes.all_products_collection_url }}">{{ 'storecanvas.cart.continue_shopping' | t }}</a></p>
   {% else %}
     <form method="post" action="{{ routes.cart_url }}" id="sc-cart-form">
       {% for item in cart.items %}
@@ -185,21 +191,21 @@ const CART_SECTION = String.raw`<section class="sc-commerce sc-cart" aria-labell
             {% for discount in item.line_level_discount_allocations %}
               <p class="sc-discount">{{ discount.discount_application.title | escape }}: -{{ discount.amount | money }}</p>
             {% endfor %}
-            <a href="{{ item.url_to_remove }}" aria-label="Remove {{ item.product.title | escape }}">Remove</a>
+            <a href="{{ item.url_to_remove }}" aria-label="{{ 'storecanvas.cart.remove_label' | t: title: item.product.title | escape }}">{{ 'storecanvas.cart.remove' | t }}</a>
           </div>
-          <label class="sc-cart-quantity">Quantity
-            <input type="number" name="updates[]" min="0" value="{{ item.quantity }}" aria-label="Quantity for {{ item.product.title | escape }}">
+          <label class="sc-cart-quantity">{{ 'storecanvas.cart.quantity' | t }}
+            <input type="number" name="updates[]" min="0" value="{{ item.quantity }}" aria-label="{{ 'storecanvas.cart.quantity_label' | t: title: item.product.title | escape }}">
           </label>
         </div>
       {% endfor %}
       {% for discount in cart.cart_level_discount_applications %}
         <p class="sc-discount">{{ discount.title | escape }}: -{{ discount.total_allocated_amount | money }}</p>
       {% endfor %}
-      <p class="sc-cart-subtotal">Subtotal: {{ cart.total_price | money }}</p>
-      {% if cart.taxes_included %}<p>Taxes are included.</p>{% else %}<p>Taxes and shipping are calculated at checkout.</p>{% endif %}
+      <p class="sc-cart-subtotal">{{ 'storecanvas.cart.subtotal' | t }}: {{ cart.total_price | money }}</p>
+      {% if cart.taxes_included %}<p>{{ 'storecanvas.cart.taxes_included' | t }}</p>{% else %}<p>{{ 'storecanvas.cart.taxes_checkout' | t }}</p>{% endif %}
       <div class="sc-cart-actions">
-        <button type="submit" class="sc-cta sc-cta-secondary" name="update">Update cart</button>
-        <button type="submit" class="sc-cta" name="checkout">Checkout</button>
+        <button type="submit" class="sc-cta sc-cta-secondary" name="update">{{ 'storecanvas.cart.update' | t }}</button>
+        <button type="submit" class="sc-cta" name="checkout">{{ 'storecanvas.cart.checkout' | t }}</button>
       </div>
     </form>
   {% endif %}
@@ -207,11 +213,12 @@ const CART_SECTION = String.raw`<section class="sc-commerce sc-cart" aria-labell
 
 const COMMERCE_JS = String.raw`(()=>{'use strict';
 const inflight=new WeakMap();
-document.addEventListener('submit',event=>{const root=event.target.closest?.('[data-sc-product]');if(!root)return;const id=root.querySelector('[data-sc-variant-id]')?.value; if(root.getAttribute('aria-busy')==='true'||root.dataset.scSelectionError==='true'||!id){event.preventDefault();announce(root,'Select an available variant before adding to cart.');}});
+const message=(root,key)=>root.dataset['scMsg'+key.charAt(0).toUpperCase()+key.slice(1)]||'';
+document.addEventListener('submit',event=>{const root=event.target.closest?.('[data-sc-product]');if(!root)return;const id=root.querySelector('[data-sc-variant-id]')?.value; if(root.getAttribute('aria-busy')==='true'||root.dataset.scSelectionError==='true'||!id||root.querySelector('[data-sc-add]')?.disabled){event.preventDefault();announce(root,message(root,'blocked'));}});
 document.addEventListener('click',event=>{const retry=event.target.closest?.('[data-sc-retry]');if(!retry)return;const selected=retry.closest('[data-sc-product]')?.querySelector('[data-sc-option]');selected?.dispatchEvent(new Event('change',{bubbles:true}));});
 const selectValues=root=>[...root.querySelectorAll('[data-sc-option]')].map(el=>el.selectedOptions[0]?.dataset.scOptionValueId||'').filter(Boolean);
 const announce=(root,message)=>{const el=root.querySelector('[data-sc-status]');if(el){el.textContent='';requestAnimationFrame(()=>{if(el.isConnected)el.textContent=message;});}};
-const setLoading=(root,loading)=>{root.setAttribute('aria-busy',String(loading));const add=root.querySelector('[data-sc-add]');if(add){add.disabled=true;if(loading)add.textContent='Updating selection…';}};
+const setLoading=(root,loading)=>{root.setAttribute('aria-busy',String(loading));const add=root.querySelector('[data-sc-add]');if(add){add.disabled=true;if(loading)add.textContent=message(root,'loading');}};
 const isValidQuantity=(field,n)=>{const min=Number(field.min)||1,max=field.hasAttribute('max')?Number(field.max):Infinity,step=Number(field.step)||1;return Number.isFinite(n)&&n>=min&&n<=max&&Math.abs((n-min)/step-Math.round((n-min)/step))<1e-8;};
 document.addEventListener('change',async event=>{
   const selected=event.target.closest?.('[data-sc-option]');if(!selected)return;
@@ -220,7 +227,7 @@ document.addEventListener('change',async event=>{
   const ids=selectValues(root);
   const optionCount=root.querySelectorAll('[data-sc-option]').length;
   const activeOption=selected.selectedOptions[0];
-  if(!sectionId||ids.length!==optionCount||!ids.length){setLoading(root,false);announce(root,'Choose all product options.');return;}
+  if(!sectionId||ids.length!==optionCount||!ids.length){root.dataset.scSelectionError='true';setLoading(root,false);root.querySelector('[data-sc-retry]')?.removeAttribute('hidden');announce(root,message(root,'incomplete'));return;}
   const previous=inflight.get(root);previous?.abort();
   const controller=new AbortController();inflight.set(root,controller);
   root.dataset.scSelectionError='true';
@@ -251,21 +258,51 @@ document.addEventListener('change',async event=>{
     url.searchParams.delete('section_id');
     history.replaceState(history.state,'',url.pathname+url.search+url.hash);
     updated.setAttribute('aria-busy','false');
-    announce(updated,updated.querySelector('[data-sc-variant-id]')?.value?'Product options updated.':'This combination is unavailable.');
+    announce(updated,message(updated,updated.querySelector('[data-sc-variant-id]')?.value?'updated':'invalid'));
   }catch(error){
     if(controller.signal.aborted)return;
     setLoading(root,false);
     root.dataset.scSelectionError='true';
     root.querySelector('[data-sc-retry]')?.removeAttribute('hidden');
-    announce(root,'Unable to update the product selection. Please retry this selection.');
+    announce(root,message(root,'failed'));
   }finally{if(inflight.get(root)===controller)inflight.delete(root);}
 });
 })();`;
 
 
+/* engine/locales.mjs */
+const STORECANVAS_STRINGS=Object.freeze({
+ en:{
+  navigation:{main:'Main navigation',home:'Home',shop:'Shop',cart:'Cart ({{ count }})'},
+  accessibility:{skip_to_content:'Skip to content',store_home:'{{ name }} home'},
+  product:{no_image:'No product photograph available',unavailable:'Combination unavailable',option_unavailable:'Unavailable',quantity:'Quantity',add_to_cart:'Add to cart',sold_out:'Sold out',retry:'Retry selection',selection_loading:'Updating selection…',selection_updated:'Product options updated.',selection_invalid:'This combination is unavailable.',selection_failed:'Unable to update product selection. Please retry.',selection_incomplete:'Choose all product options.',selection_blocked:'Select an available variant before adding to cart.'},
+  cart:{title:'Your cart',empty:'Your cart is empty.',continue_shopping:'Continue shopping',remove:'Remove',remove_label:'Remove {{ title }}',quantity:'Quantity',quantity_label:'Quantity for {{ title }}',subtotal:'Subtotal',taxes_included:'Taxes are included.',taxes_checkout:'Taxes and shipping are calculated at checkout.',update:'Update cart',checkout:'Checkout'},
+  search:{title:'Search',label:'Search products',submit:'Search'},
+  errors:{not_found:'Page not found',go_home:'Go home'}
+ },
+ es:{
+  navigation:{main:'Navegación principal',home:'Inicio',shop:'Tienda',cart:'Carrito ({{ count }})'},
+  accessibility:{skip_to_content:'Saltar al contenido',store_home:'Inicio de {{ name }}'},
+  product:{no_image:'No hay foto del producto disponible',unavailable:'Combinación no disponible',option_unavailable:'No disponible',quantity:'Cantidad',add_to_cart:'Añadir al carrito',sold_out:'Agotado',retry:'Reintentar selección',selection_loading:'Actualizando selección…',selection_updated:'Opciones del producto actualizadas.',selection_invalid:'Esta combinación no está disponible.',selection_failed:'No se pudo actualizar la selección. Inténtalo de nuevo.',selection_incomplete:'Elige todas las opciones del producto.',selection_blocked:'Selecciona una variante disponible antes de añadirla al carrito.'},
+  cart:{title:'Tu carrito',empty:'Tu carrito está vacío.',continue_shopping:'Seguir comprando',remove:'Eliminar',remove_label:'Eliminar {{ title }}',quantity:'Cantidad',quantity_label:'Cantidad para {{ title }}',subtotal:'Subtotal',taxes_included:'Los impuestos están incluidos.',taxes_checkout:'Los impuestos y el envío se calculan al pagar.',update:'Actualizar carrito',checkout:'Finalizar compra'},
+  search:{title:'Buscar',label:'Buscar productos',submit:'Buscar'},
+  errors:{not_found:'Página no encontrada',go_home:'Ir al inicio'}
+ }
+});
+function validateTranslations(){
+ const walk=(obj,prefix='',map=new Map())=>{for(const [key,v] of Object.entries(obj)){const k=prefix?prefix+'.'+key:key;if(typeof v==='string')map.set(k,v);else if(v&&typeof v==='object'&&!Array.isArray(v))walk(v,k,map);else throw Error('Invalid translation '+k)}return map;};
+ const english=walk(STORECANVAS_STRINGS.en),spanish=walk(STORECANVAS_STRINGS.es);
+ const vars=s=>[...s.matchAll(/{{\s*(\w+)\s*}}/g)].map(x=>x[1]).sort().join(',');
+ for(const [key,value] of english)if(!spanish.has(key)||vars(value)!==vars(spanish.get(key)))throw Error('Mismatched Spanish translation '+key);
+ for(const key of spanish.keys())if(!english.has(key))throw Error('Mismatched English translation '+key);
+ return true;
+}
+
+
 /* engine/theme.mjs */
 /** StoreCanvas v0.5: one validated preview document => Shopify Online Store 2.0 package.
  * Pure ESM; no auth, network access, or live theme publishing. */
+
 
 
 
@@ -285,14 +322,14 @@ body{margin:0;color:#183522;background:#fff;font-family:Arial,sans-serif}
 .sc-cart-row{display:flex;align-items:center;gap:22px;border-bottom:1px solid #ddd;padding:18px 0}.sc-cart-row img{width:84px;height:98px;object-fit:cover}
 @media(max-width:700px){.sc-product-main{grid-template-columns:1fr}.sc-site-header{align-items:flex-start;flex-direction:column}}
 `;
-const header = section('StoreCanvas header', `<header class="sc-site-header"><a href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }} home"><strong>{{ shop.name | escape }}</strong></a><nav class="sc-site-nav" aria-label="Main navigation"><a href="{{ routes.root_url }}">Home</a><a href="{{ routes.all_products_collection_url }}">Shop</a><a href="{{ routes.cart_url }}">Cart ({{ cart.item_count }})</a></nav></header>`);
+const header = section('StoreCanvas header', `<header class="sc-site-header"><a href="{{ routes.root_url }}" aria-label="{{ 'storecanvas.accessibility.store_home' | t: name: shop.name | escape }}"><strong>{{ shop.name | escape }}</strong></a><nav class="sc-site-nav" aria-label="{{ 'storecanvas.navigation.main' | t | escape }}"><a href="{{ routes.root_url }}">{{ 'storecanvas.navigation.home' | t }}</a><a href="{{ routes.all_products_collection_url }}">{{ 'storecanvas.navigation.shop' | t }}</a><a href="{{ routes.cart_url }}">{{ 'storecanvas.navigation.cart' | t: count: cart.item_count }}</a></nav></header>`);
 const footer = section('StoreCanvas footer', `<footer class="sc-site-footer"><span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name | escape }}</span><a href="{{ routes.root_url }}">Home</a></footer>`);
 const product = section('StoreCanvas product', PRODUCT_SECTION);
 const collection = section('StoreCanvas collection', `<div class="sc-commerce"><h1>{{ collection.title | escape }}</h1><div>{{ collection.description }}</div>{% paginate collection.products by 24 %}<div class="sc-commerce-grid">{% for p in collection.products %}<a href="{{ p.url }}">{% if p.featured_image %}{{ p.featured_image | image_url: width: 640 | image_tag: loading: 'lazy' }}{% endif %}<h2>{{ p.title | escape }}</h2><p>{{ p.price | money }}</p></a>{% endfor %}</div>{{ paginate | default_pagination }}{% endpaginate %}</div>`);
 const cart = section('StoreCanvas cart', CART_SECTION);
 const page = section('StoreCanvas page', '<article class="sc-commerce"><h1>{{ page.title | escape }}</h1>{{ page.content }}</article>');
-const search = section('StoreCanvas search', `<div class="sc-commerce"><h1>Search</h1><form method="get" action="{{ routes.search_url }}"><label for="sc-search">Search products</label><input id="sc-search" name="q" type="search" value="{{ search.terms | escape }}"><button class="sc-cta" type="submit">Search</button></form><div class="sc-commerce-grid">{% for p in search.results %}<a href="{{ p.url }}">{% if p.featured_image %}{{ p.featured_image | image_url: width: 640 | image_tag: loading: 'lazy' }}{% endif %}<h2>{{ p.title | escape }}</h2></a>{% endfor %}</div></div>`);
-const notFound = section('StoreCanvas 404', '<div class="sc-commerce"><h1>Page not found</h1><a class="sc-cta" href="{{ routes.root_url }}">Go home</a></div>');
+const search = section('StoreCanvas search', `<div class="sc-commerce"><h1>{{ 'storecanvas.search.title' | t }}</h1><form method="get" action="{{ routes.search_url }}"><label for="sc-search">{{ 'storecanvas.search.label' | t }}</label><input id="sc-search" name="q" type="search" value="{{ search.terms | escape }}"><button class="sc-cta" type="submit">{{ 'storecanvas.search.submit' | t }}</button></form><div class="sc-commerce-grid">{% for p in search.results %}<a href="{{ p.url }}">{% if p.featured_image %}{{ p.featured_image | image_url: width: 640 | image_tag: loading: 'lazy' }}{% endif %}<h2>{{ p.title | escape }}</h2></a>{% endfor %}</div></div>`);
+const notFound = section('StoreCanvas 404', `<div class="sc-commerce"><h1>{{ 'storecanvas.errors.not_found' | t }}</h1><a class="sc-cta" href="{{ routes.root_url }}">{{ 'storecanvas.errors.go_home' | t }}</a></div>`);
 
 const ALLOWED_IMG = new Set(['png','jpeg','webp','gif']);
 function decodeImage(uri){const match=/^data:image\/(png|jpeg|webp|gif);base64,([A-Za-z0-9+/=]+)$/i.exec(uri);
@@ -330,18 +367,20 @@ function replaceMedia(html,files){
 }
 
 function compileShopifyTheme(project){
+ validateTranslations();
  const preview=renderPreview(project); // validates before any generated file
  const files=new Map(); const homeHtml=replaceMedia(preview.html,files);
  const liquid=section('StoreCanvas homepage',`<main class="sc-page">${homeHtml}</main>`);
  if(new TextEncoder().encode(liquid).length>230000)throw Error('Homepage exceeds safe Shopify section size; split it into pages');
- files.set('layout/theme.liquid',`<!doctype html><html lang="{{ request.locale.iso_code }}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ page_title | escape }} – {{ shop.name | escape }}</title>{{ content_for_header }}{{ 'storecanvas.css' | asset_url | stylesheet_tag }}<script>window.SC_HAPTICS_ENABLED=${preview.document.settings.haptics?'true':'false'};</script><script src="{{ 'storecanvas.js' | asset_url }}" defer></script><script src="{{ 'storecanvas-commerce.js' | asset_url }}" defer></script></head><body><a class="sc-skip" href="#MainContent">Skip to content</a>{% section 'storecanvas-header' %}<div id="MainContent">{{ content_for_layout }}</div>{% section 'storecanvas-footer' %}</body></html>`);
+ files.set('layout/theme.liquid',`<!doctype html><html lang="{{ request.locale.iso_code }}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ page_title | escape }} – {{ shop.name | escape }}</title>{{ content_for_header }}{{ 'storecanvas.css' | asset_url | stylesheet_tag }}<script>window.SC_HAPTICS_ENABLED=${preview.document.settings.haptics?'true':'false'};</script><script src="{{ 'storecanvas.js' | asset_url }}" defer></script><script src="{{ 'storecanvas-commerce.js' | asset_url }}" defer></script></head><body><a class="sc-skip" href="#MainContent">{{ 'storecanvas.accessibility.skip_to_content' | t }}</a>{% section 'storecanvas-header' %}<div id="MainContent">{{ content_for_layout }}</div>{% section 'storecanvas-footer' %}</body></html>`);
  files.set('assets/storecanvas.css',preview.css+cssExtra);files.set('assets/storecanvas.js',preview.js);files.set('assets/storecanvas-commerce.js',COMMERCE_JS);
  const sections={'storecanvas-home':liquid,'storecanvas-header':header,'storecanvas-footer':footer,'main-product':product,'main-collection':collection,'main-cart':cart,'main-page':page,'main-search':search,'main-404':notFound};
  for(const [name,body] of Object.entries(sections))files.set(`sections/${name}.liquid`,body);
  const templates={index:'storecanvas-home',product:'main-product',collection:'main-collection',cart:'main-cart',page:'main-page',search:'main-search','404':'main-404'};
  for(const [name,sectionName] of Object.entries(templates))files.set(`templates/${name}.json`,template(sectionName));
- files.set('config/settings_schema.json',JSON.stringify([{name:'theme_info',theme_name:'StoreCanvas Starter',theme_author:'StoreCanvas',theme_version:'0.8.0',theme_documentation_url:'https://shopify.dev/docs/storefronts/themes',theme_support_url:'https://shopify.dev/'}]));
- files.set('locales/en.default.json','{}');
+ files.set('config/settings_schema.json',JSON.stringify([{name:'theme_info',theme_name:'StoreCanvas Starter',theme_author:'StoreCanvas',theme_version:'0.9.0',theme_documentation_url:'https://shopify.dev/docs/storefronts/themes',theme_support_url:'https://shopify.dev/'}]));
+ files.set('locales/en.default.json',JSON.stringify({storecanvas:STORECANVAS_STRINGS.en}));
+ files.set('locales/es.json',JSON.stringify({storecanvas:STORECANVAS_STRINGS.es}));
  return files;
 }
 

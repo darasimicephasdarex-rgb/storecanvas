@@ -16,7 +16,7 @@ test('High-variant picker uses option values instead of truncated variants',()=>
 test('Ajax variant refresh protects native cart form and supports retry',()=>{
  for(const x of ['fetch(','option_values','section_id','preview_theme_id','AbortController','root.replaceWith(updated)','new DOMParser()','aria-busy','url.origin!==location.origin','scSelectionError','data-sc-retry','event.preventDefault()'])assert.ok(COMMERCE_JS.includes(x),x);
  assert.equal(files.get('assets/storecanvas-commerce.js'),COMMERCE_JS);
- assert.match(PRODUCT_SECTION,/Combination unavailable/);
+ assert.match(PRODUCT_SECTION,/storecanvas\.product\.unavailable/);
  assert.doesNotMatch(PRODUCT_SECTION,/product\.variants\.first/);
 });
 test('Cart maintains Shopify native checkout and line updates',()=>{
