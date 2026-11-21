@@ -7,10 +7,11 @@
     "build:browser": "node scripts/build-browser.mjs",
     "check:runtime": "node scripts/build-browser.mjs --check",
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check app/server/auth.mjs && node --check app/server/store.mjs && node --check app/server/http.mjs && node --check app/server/serve.mjs && node --check app/server/token-vault.mjs && node --check app/server/shopify.mjs && node --check app/public/dashboard.js && node --check app/public/cloud.js && node --check engine/keyframes.mjs && node --check engine/core.mjs && node --check engine/commerce.mjs && node --check engine/locales.mjs && node --check engine/theme.mjs && node --check engine/zip.mjs && node --check editor/runtime.js && node --check editor/exporter.js && node --check editor/app.js && node scripts/build-browser.mjs --check && node --check scripts/export-theme.mjs && node --check scripts/validate-theme.mjs",
+    "check": "node --check app/server/auth.mjs && node --check app/server/store.mjs && node --check app/server/http.mjs && node --check app/server/serve.mjs && node --check app/server/token-vault.mjs && node --check app/server/shopify.mjs && node --check app/public/dashboard.js && node --check app/public/cloud.js && node --check engine/keyframes.mjs && node --check engine/core.mjs && node --check engine/commerce.mjs && node --check engine/locales.mjs && node --check engine/theme.mjs && node --check engine/zip.mjs && node --check editor/runtime.js && node --check editor/exporter.js && node --check editor/app.js && node scripts/build-browser.mjs --check && node --check scripts/export-theme.mjs && node --check scripts/validate-theme.mjs && node --check app/server/deployment.mjs",
     "build:theme": "node scripts/export-theme.mjs",
     "check:theme": "node scripts/validate-theme.mjs",
-    "app:dev": "node app/server/serve.mjs"
+    "app:dev": "node app/server/serve.mjs",
+    "start": "node app/server/serve.mjs"
   },
   "engines": {
     "node": ">=20"
