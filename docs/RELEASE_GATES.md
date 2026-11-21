@@ -90,3 +90,12 @@ No live theme publishing performed. App deployment not begun. GitHub draft PR is
 - [ ] Actual customer-browser cart and checkout handoff QA (no interactive storefront control in connection).
 - [ ] Fresh v0.10 ZIP import and 250+ real Shopify variant product test.
 - [ ] Advanced grouped/scroll-scrub animations and full production app backend.
+
+## v0.11 app development foundation — 2026-11-21
+- [x] Standalone signed Shopify App Bridge ID-token verification (HS256, time, issuer, audience and destination).
+- [x] Tenant-isolated AES-256-GCM development draft CRUD with optimistic revisions.
+- [x] HMAC-signed webhook endpoint; tenant ID cross-checked against signed payload to reject cross-shop erasure.
+- [x] Single-process shop-level mutex for writes/erasure, tampering tests, HTTP integration tests.
+- [ ] Official Shopify app installation, token exchange, merchant sessions, webhooks registration, real multi-tenant database and hosting.
+- [ ] Real cart and checkout browser interaction on a Shopify test store.
+- [ ] Signed webhook replay/idempotency durability, production retention and audit controls.

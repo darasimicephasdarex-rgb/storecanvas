@@ -17,6 +17,12 @@ jobs:
           node-version: '22'
       - name: Syntax and reproducible runtime
         run: npm run check
+      - name: Validate secure project API syntax
+        run: |
+          node --check app/server/auth.mjs
+          node --check app/server/store.mjs
+          node --check app/server/http.mjs
+          node --check app/server/serve.mjs
       - name: All core, commerce and export tests
         run: npm test
       - name: Generate independent Shopify theme

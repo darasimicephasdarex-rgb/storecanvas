@@ -1,4 +1,4 @@
-# StoreCanvas Studio — developer preview v0.8
+# StoreCanvas Studio — developer preview v0.11
 
 StoreCanvas is a **free-first, local visual Shopify theme editor** with nested freeform layers, responsive coordinates, motion controls, a slideshow component, optional device haptics, and a ZIP exporter.
 
@@ -6,14 +6,17 @@ StoreCanvas is a **free-first, local visual Shopify theme editor** with nested f
 
 ## Quick start (no paid tools)
 
-Open `editor/index.html` in a modern desktop browser, or serve this directory with any free static server. The browser runtime is self-contained and uses no external JavaScript dependencies. Design and export a Shopify theme ZIP. Always upload and preview it on an **unpublished test theme/store** first. The generated theme has not passed full Shopify Theme Check, app review or commerce QA.
+Open `editor/index.html` in a modern desktop browser, or serve this directory with any free static server. The browser runtime is self-contained and uses no external JavaScript dependencies. Design and export a Shopify theme ZIP. Always upload and preview it on an **unpublished test theme/store** first. The generated theme passed Shopify Theme Check and a fresh v0.10 unpublished ZIP import; app review and real interactive commerce QA remain outstanding.
 
 ## Developer commands (Node.js >= 20)
 
 ```bash
 npm run build:browser  # regenerates classic editor/runtime.js from engine sources
 npm run check          # syntax + runtime reproducibility
-npm test               # unit and export-integrity tests
+npm test               # project engine, export integrity and authenticated draft API tests
+npm run build:theme    # compile independent Shopify theme ZIP
+npm run check:theme    # audit generated theme structure and hashes
+npm run app:dev        # run development-only authenticated API after configuring env variables
 ```
 
 Optional browser regression: `python tests/browser_check.py` (requires locally installed Playwright and Chromium; not part of CI). The automated browser harness loads scripts without a web server to work inside constrained test environments; it is not a complete file:// compatibility certification.
@@ -43,7 +46,7 @@ Optional browser regression: `python tests/browser_check.py` (requires locally i
 
 - The output is an **independent starter theme**, not a safe overlay for an arbitrary installed theme.
 - The included product, cart, search, and collection templates are minimal; payment flows, variants, locale, accelerated checkout, privacy and theme compliance need real QA before production.
-- Full automated Shopify app install, OAuth, database, publishing, rollback, multi-tenant SaaS hosting and App Store compliance remain unimplemented.
+- Production Shopify installation/OAuth/token exchange, transactional cloud database, publishing, rollback, SaaS hosting and App Store compliance remain unimplemented. A **development-only** authenticated, encrypted draft API exists under `app/`.
 - Haptic vibration is optional and hardware/browser dependent; reduced-motion preferences disable animations.
 - The exporter does not request or store Shopify API credentials. Uploaded images are processed locally.
 - The connected live storefront was not modified by this release.
@@ -87,3 +90,15 @@ with 27 files and desktop/mobile page-preview requests. A real product-selection
 add-to-cart, cart quantity update and checkout handoff has **not** yet been tested via
 interactive Shopify customer browser. Read-only screenshot/theme tools cannot substitute
 for that test. Do not publish before verified Shopify storefront interaction QA.
+
+
+## v0.11 — Signed Shopify session tokens and isolated draft storage
+
+A **development-only** Node HTTP API now verifies Shopify-signed App Bridge ID tokens per request,
+validates shop identity, stores encrypted AES-256-GCM project drafts separately per shop,
+and handles raw-HMAC-authenticated uninstall/privacy webhooks. It includes revision checks,
+shop-scoped serialized writes, and rejects webhook shop-header substitution.
+See `app/README.md` and `app/.env.example` for the exact endpoints and security limits.
+No production app installation, merchant OAuth/token exchange, cloud database, or public API hosting has occurred.
+The v0.10 independent theme remains unpublished; real add-to-cart and checkout click QA
+remains blocked on interactive browser access.
