@@ -19,3 +19,14 @@ test('injected HTML is escaped and unsafe URLs are rejected',()=>{const p=sample
 test('rejects duplicate IDs, bad dimensions and parent cycles',()=>{const a=sample();a.sections[0].layers[1].id=a.sections[0].layers[0].id;assert.throws(()=>validateProject(a),/Duplicate ID/);const b=sample();b.sections[0].layers[0].w=0;assert.throws(()=>validateProject(b),/Invalid dimensions/);const c=sample();c.sections[0].layers[3].parentId='container_01';assert.throws(()=>validateProject(c),/Parent cycle/)});
 test('restricts excessive sections and unsupported layer types',()=>{const a=sample();a.sections=Array.from({length:41},(_,i)=>({...sample().sections[0],id:'hero_'+i,layers:[]}));assert.throws(()=>validateProject(a),/1–40/);const b=sample();b.sections[0].layers[0].type='iframe';assert.throws(()=>validateProject(b),/Unsupported/)});
 test('full document has reduced-motion support and closes correctly',()=>{const html=fullHTML(sample());assert.match(html,/<main class="sc-page">/);assert.match(html,/prefers-reduced-motion/);assert.ok(html.endsWith('</script></body></html>'))});
+
+test('slideshow transitions keep inaccessible slides out of screen readers',()=>{
+ const out=renderPreview(sample());
+ assert.match(out.html,/class="sc-slide" aria-hidden="true" hidden/);
+ assert.match(out.css,/data-transition=slide/);
+ assert.match(out.css,/data-transition=zoom/);
+ assert.match(out.css,/\.sc-slide\.is-active/);
+ assert.match(out.js,/focusout/);
+ assert.match(out.js,/mouseleave/);
+ assert.match(out.js,/aria-hidden/);
+});
