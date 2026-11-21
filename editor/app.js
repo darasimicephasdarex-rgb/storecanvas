@@ -268,3 +268,13 @@ function bindEvents(){
  document.addEventListener('keydown',handleKey);
 }
 renderAll();bindEvents();saveLocal();
+// Narrow bridge for the authenticated Shopify app shell. Browser code never sees an Admin token.
+window.StoreCanvasBridge=Object.freeze({
+ getDocument:()=>clone(project),
+ setDocument:(incoming)=>{
+  const safe=MOTION_ENGINE().validateProject(clone(incoming));
+  const data=validateProject(clone(safe));
+  change(()=>{project=data;ui.sectionId=data.sections[0].id;ui.selectedId=data.sections[0].layers[0]?.id||null;ui.playing=false});
+  notify('Cloud draft loaded');
+ }
+});

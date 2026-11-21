@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StoreCanvas · Shopify design workspace</title>
+<link rel="stylesheet" href="/app/assets/dashboard.css">
+</head><body>
+<div class="shell">
+ <aside class="nav"><a class="wordmark" href="/app/" aria-label="StoreCanvas home"><span class="brandmark">▦</span><strong>StoreCanvas</strong></a><span class="nav-label">WORKSPACE</span><a href="/app/" class="nav-link active" aria-current="page">Projects</a><div class="nav-spacer"></div><small>Development preview · v0.12</small></aside>
+ <main class="main">
+  <header class="top"><div><p class="eyebrow">SHOPIFY VISUAL BUILDER</p><h1>Design your next storefront.</h1><p class="intro">Create, save and reopen freeform page designs. Export drafts to a Shopify theme for review before publishing.</p></div><div class="shop-pill" id="shopStatus" role="status">Checking Shopify session…</div></header>
+  <section class="toolbar" aria-label="Project actions"><div><h2>Your projects</h2><p class="sub">Projects are private to the current Shopify store.</p></div><div class="tools"><label class="btn secondary" for="projectImport">Import project JSON</label><input type="file" id="projectImport" accept=".json,application/json" hidden><button type="button" class="btn primary" id="newProject">New design <span aria-hidden="true">＋</span></button></div></section>
+  <p class="status" id="feedback" role="status" aria-live="polite"></p>
+  <div class="projects" id="projectList" aria-live="polite"><p class="loading">Loading your saved projects…</p></div>
+  <section class="note"><div><strong>Keep your live store safe.</strong><p>Projects are drafts until you explicitly export and publish a theme. This workspace never publishes a live theme automatically.</p></div><a href="/app/editor/" class="subtle-link">Open local canvas</a></section>
+  <footer>StoreCanvas Studio · Free-first development workspace</footer>
+ </main>
+</div>
+<script src="/app/assets/dashboard.js"></script>
+</body></html>
