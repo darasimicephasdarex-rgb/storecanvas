@@ -77,3 +77,9 @@ No live theme publishing performed. App deployment not begun. GitHub draft PR is
 - [x] Unit tests and offline browser regressions updated.
 - [ ] GitHub Theme Check and fresh ZIP import require separate acceptance.
 - [ ] Real cart-to-checkout testing, selling plans, multi-store OAuth and publishing remain incomplete.
+
+## Live storefront QA runner (non-purchasing, v0.9)
+- [x] Guarded Playwright runner created in tests/live_storefront_smoke.py; preview_theme_id required and live-theme URLs refused.
+- [x] Offline URL safety self-test passes, no external network or merchant data is changed.
+- [ ] Real browser QA not run in current environment because Shopify preview host is unreachable over network.
+- [ ] Run on an in-stock product in an unpublished test theme to verify product→cart→quantity→checkout handoff. --verify-checkout only opens checkout; never submits payment or an order.
