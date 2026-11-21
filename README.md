@@ -1,4 +1,4 @@
-# StoreCanvas Studio — developer preview v0.7
+# StoreCanvas Studio — developer preview v0.9
 
 StoreCanvas is a **free-first, local visual Shopify theme editor** with nested freeform layers, responsive coordinates, motion controls, a slideshow component, optional device haptics, and a ZIP exporter.
 
@@ -6,7 +6,7 @@ StoreCanvas is a **free-first, local visual Shopify theme editor** with nested f
 
 ## Quick start (no paid tools)
 
-Open `editor/index.html` in a modern desktop browser, or serve this directory with any free static server. The browser runtime is self-contained and uses no external JavaScript dependencies. Design and export a Shopify theme ZIP. Always upload and preview it on an **unpublished test theme/store** first. The generated theme passes Shopify's official error-level Theme Check in CI; it is **not** certified for merchant checkout, high-variant catalogs, independent ZIP import, app review or production use.
+Open `editor/index.html` in a modern desktop browser, or serve this directory with any free static server. The browser runtime is self-contained and uses no external JavaScript dependencies. Design and export a Shopify theme ZIP. Always upload and preview it on an **unpublished test theme/store** first. The generated theme passes Shopify's official error-level Theme Check in CI; it is **not** certified for checkout/payment, real 250+ variant catalogs, app review or production use. Unpublished full-ZIP imports have been accepted by Shopify for v0.7 and v0.8.
 
 ## Developer commands (Node.js >= 20)
 
@@ -77,3 +77,8 @@ See `docs/INDEPENDENT_THEME_IMPORT_V08.md` for exact acceptance evidence and `do
 
 ## v0.9 — localized Shopify commerce
 The generated Shopify theme now includes English and Spanish storefront locale catalogs. Native Liquid translation keys are used for product forms, status/errors, cart labels, navigation, search and accessibility. Dynamic variant feedback is supplied by the current translated product section. Stale, empty and disabled variant states cannot be submitted. Run npm run check, npm test, npm run build:theme and npm run check:theme; this does not certify real Shopify checkout.
+
+### Fresh ZIP and real-store QA status (2026-11-21)
+Shopify accepted the complete original v0.8 ZIP as a **new, separate unpublished theme** named `StoreCanvas v0.8 Fresh ZIP QA` (26 source files, no import errors). Desktop/mobile previews of the homepage, product, cart and collection completed. This is rendering acceptance, **not proof of product clicks or checkout handoff**.
+
+To execute real interaction QA safely on an in-stock test product, install free Playwright + Chromium and run `python tests/live_storefront_smoke.py --preview 'https://your-store.myshopify.com/?preview_theme_id=THE_UNPUBLISHED_ID' --product-handle example-product`. The optional `--verify-checkout` only checks navigation: never supplies payment or places an order. The runner refuses URLs without a preview theme ID. GitHub CI runs its offline safety self-test, not live store mutations.

@@ -83,3 +83,11 @@ No live theme publishing performed. App deployment not begun. GitHub draft PR is
 - [x] Offline URL safety self-test passes, no external network or merchant data is changed.
 - [ ] Real browser QA not run in current environment because Shopify preview host is unreachable over network.
 - [ ] Run on an in-stock product in an unpublished test theme to verify product→cart→quantity→checkout handoff. --verify-checkout only opens checkout; never submits payment or an order.
+
+## Fresh v0.8 import evidence (2026-11-21)
+- [x] Shopify themeCreate accepted the complete unmodified 26-file v0.8 archive, creating UNPUBLISHED `StoreCanvas v0.8 Fresh ZIP QA` with zero user errors.
+- [x] Inspected actual Shopify theme directory: correct v0.8 config, product section, 7 JSON templates, all SVG/CSS/JS assets; original archive size 26 files.
+- [x] Shopify desktop/mobile preview capture for homepage, product, collection and cart completed on the new unpublished theme.
+- [x] v0.9 GitHub CI passed 28 Node tests, Python safety checks, deterministic theme build, structural audit and official Theme Check.
+- [ ] Fresh *v0.9* archive import still outstanding until Shopify confirms upload URL and import.
+- [ ] Real add-to-cart and checkout interactions remain unverified; snapshots alone do not prove functionality.
