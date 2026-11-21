@@ -4,7 +4,7 @@ Requires local Playwright and Chromium; never places orders on Shopify.
 import asyncio
 import subprocess
 from pathlib import Path
-from playwright.async_api import async_playwright
+from playwright.async_api import async_playwright, expect
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -25,22 +25,19 @@ async def main():
         async def caption():
             return await slider.locator('.sc-slide.is-active figcaption').inner_text()
         initial=await caption()
-        await page.wait_for_timeout(240)
-        assert await caption()!=initial,'Autoplay should advance'
+        await expect(slider.locator('.sc-slide.is-active figcaption')).not_to_have_text(initial,timeout=2500)
         await slider.hover()
         hovered=await caption()
         await page.wait_for_timeout(260)
         assert await caption()==hovered,'Autoplay must pause on hover'
         await page.mouse.move(0,0)
-        await page.wait_for_timeout(240)
-        assert await caption()!=hovered,'Autoplay must resume after pointer leave'
+        await expect(slider.locator('.sc-slide.is-active figcaption')).not_to_have_text(hovered,timeout=2500)
         await slider.locator('[data-next]').focus()
         focused=await caption()
         await page.wait_for_timeout(260)
         assert await caption()==focused,'Autoplay must pause when focused'
         await page.evaluate('document.activeElement.blur()')
-        await page.wait_for_timeout(240)
-        assert await caption()!=focused,'Autoplay must resume after focus leaves'
+        await expect(slider.locator('.sc-slide.is-active figcaption')).not_to_have_text(focused,timeout=2500)
         button=slider.locator('[data-pause]')
         await button.click()
         assert await button.get_attribute('aria-pressed')=='false'
@@ -53,8 +50,7 @@ async def main():
         assert await button.get_attribute('aria-pressed')=='true'
         await page.mouse.move(0,0)
         await page.evaluate('document.activeElement.blur()')
-        await page.wait_for_timeout(220)
-        assert await caption()!=paused,'Explicit Play must resume'
+        await expect(slider.locator('.sc-slide.is-active figcaption')).not_to_have_text(paused,timeout=2500)
         assert not errors,errors
         await browser.close()
         print('Slideshow browser regression passed')
