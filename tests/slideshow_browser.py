@@ -23,7 +23,7 @@ async def main():
         slider=page.locator('.sc-slideshow').first
         assert await slider.count()==1
         async def caption():
-            return await slider.locator('.sc-slide:not([hidden]) figcaption').inner_text()
+            return await slider.locator('.sc-slide.is-active figcaption').inner_text()
         initial=await caption()
         await page.wait_for_timeout(240)
         assert await caption()!=initial,'Autoplay should advance'
