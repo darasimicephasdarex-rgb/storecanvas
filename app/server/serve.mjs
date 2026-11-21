@@ -1,5 +1,12 @@
 import {createAppServer} from './http.mjs';
-const port=Number(process.env.PORT||8787),host=process.env.HOST||'127.0.0.1';
-if(!Number.isInteger(port)||port<1||port>65535)throw Error('Invalid port');
-const server=createAppServer();
-server.listen(port,host,()=>{console.log(`StoreCanvas development API listening on ${host}:${port}; protect with HTTPS before hosting`);});
+import {resolveDeploymentConfig,verifyPersistentDirectory} from './deployment.mjs';
+
+const config=resolveDeploymentConfig();
+await verifyPersistentDirectory(config.directory);
+const server=createAppServer({directory:config.directory,key:config.key.toString('hex'),apiKey:config.apiKey,secret:config.secret});
+server.listen(config.port,config.host,()=>{
+ console.log(`StoreCanvas app listening on ${config.host}:${config.port} (${config.production?'production single-instance':'development'} mode)`);
+});
+for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{
+ server.close(error=>{if(error)console.error('Server shutdown failed');process.exit(error?1:0);});
+});
