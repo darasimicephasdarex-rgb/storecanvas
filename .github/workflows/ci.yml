@@ -28,6 +28,13 @@ jobs:
         with:
           theme_root: ./dist/shopify-theme
           flags: --fail-level error
+      - name: Upload generated QA theme ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: storecanvas-theme-qa
+          path: dist/storecanvas-theme.zip
+          if-no-files-found: error
+          retention-days: 14
       - name: Validate storefront JavaScript source
         run: |
           node --check editor/app.js
