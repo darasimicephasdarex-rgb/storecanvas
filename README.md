@@ -63,3 +63,6 @@ Generated Shopify product and cart sections now support selected variant price/m
 - **Outstanding:** The independent ZIP has not yet been installed as a separately created unpublished Shopify theme; app OAuth, multi-tenancy, publishing, rollback and high-variant products remain outstanding.
 
 Run locally: `npm run check && npm test && npm run build:theme && npm run check:theme`. Shopify Theme Check runs automatically in GitHub Actions.
+
+### Slideshow interaction QA
+The generated storefront now animates `fade`, `slide`, and `zoom` transitions. Autoplay respects pointer hover, keyboard focus, explicit Pause, tab visibility and reduced-motion preferences. Inactive slides are marked as hidden from assistive technologies. An optional Chromium test is available via `python tests/slideshow_browser.py` (requires Playwright/Chromium on your own machine); CI executes the dependency-free Node tests.
