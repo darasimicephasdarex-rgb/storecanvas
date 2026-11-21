@@ -50,3 +50,9 @@ No live theme publishing performed. App deployment not begun. GitHub draft PR is
 - Shopify theme lint passing does **not** prove all runtime commerce, payment, animation, accessibility, localization or independent theme installation paths.
 - Slider autoplay now distinguishes explicit Pause from hover/focus/visibility pauses; it does not resume while another pause source remains active.
 - CI artifacts are disposable development builds and must not be automatically published to customers.
+
+## Motion-rendering gate
+- [x] Fade, slide and zoom transitions implemented in storefront CSS and browser runtime (not just editor controls).
+- [x] Inactive slideshow figures receive `aria-hidden=true` while active figures are perceivable.
+- [x] Local Chromium test verifies autoplay, hover pause, keyboard focus pause, pointer/focus resume and explicit Pause/Play.
+- [ ] Broader screen-reader audits, touch-device testing and large breakpoint visual regression remain outstanding.
