@@ -1,4 +1,4 @@
-# StoreCanvas Studio — developer preview v0.5
+# StoreCanvas Studio — developer preview v0.7
 
 StoreCanvas is a **free-first, local visual Shopify theme editor** with nested freeform layers, responsive coordinates, motion controls, a slideshow component, optional device haptics, and a ZIP exporter.
 
@@ -6,7 +6,7 @@ StoreCanvas is a **free-first, local visual Shopify theme editor** with nested f
 
 ## Quick start (no paid tools)
 
-Open `editor/index.html` in a modern desktop browser, or serve this directory with any free static server. The browser runtime is self-contained and uses no external JavaScript dependencies. Design and export a Shopify theme ZIP. Always upload and preview it on an **unpublished test theme/store** first. The generated theme has not passed full Shopify Theme Check, app review or commerce QA.
+Open `editor/index.html` in a modern desktop browser, or serve this directory with any free static server. The browser runtime is self-contained and uses no external JavaScript dependencies. Design and export a Shopify theme ZIP. Always upload and preview it on an **unpublished test theme/store** first. The generated theme passes Shopify's official error-level Theme Check in CI; it is **not** certified for merchant checkout, high-variant catalogs, independent ZIP import, app review or production use.
 
 ## Developer commands (Node.js >= 20)
 
@@ -14,9 +14,11 @@ Open `editor/index.html` in a modern desktop browser, or serve this directory wi
 npm run build:browser  # regenerates classic editor/runtime.js from engine sources
 npm run check          # syntax + runtime reproducibility
 npm test               # unit and export-integrity tests
+npm run build:theme     # generate full theme directory + ZIP + SHA-256 manifest
+npm run check:theme     # validate complete generated theme structure and hashes
 ```
 
-Optional browser regression: `python tests/browser_check.py` (requires locally installed Playwright and Chromium; not part of CI). The automated browser harness loads scripts without a web server to work inside constrained test environments; it is not a complete file:// compatibility certification.
+Optional browser regressions: `python tests/browser_check.py` and `python tests/slideshow_browser.py` (requires locally installed Playwright and Chromium; not part of CI). The automated browser harness loads scripts without a web server to work inside constrained test environments; it is not a complete file:// compatibility certification.
 
 ## What changed in v0.5
 
@@ -51,3 +53,13 @@ Optional browser regression: `python tests/browser_check.py` (requires locally i
 ## v0.6 — Shopify commerce QA milestone
 
 Generated Shopify product and cart sections now support selected variant price/media, availability, quantity-rule updates, cart line updates/removal, discounts and tax messaging. Commerce interactions use native Shopify forms; no checkout simulation or order placement occurs automatically. Run `npm test`, `npm run check`, and the optional Playwright browser smoke test. See `docs/SHOPIFY_QA_2026-11-21.md` for verified scope and outstanding risks. **This is not a production-ready theme or SaaS.**
+
+## v0.7 — Shopify Theme Check quality gate
+
+- GitHub Actions builds the complete 26-file theme and runs Shopify's official Theme Check against the generated source directory. The resulting ZIP is retained as a QA artifact on successful runs.
+- Generated images have explicit dimensions, and known collection/cart links use Shopify route objects for market-aware paths.
+- A local audit verifies section schema JSON, template and asset references, and SHA-256 file hashes.
+- Slideshow autoplay now pauses on hover, keyboard focus, explicit Pause and reduced motion; it resumes only when no pause source remains. Chromium regression covers transitions among these states.
+- **Outstanding:** The independent ZIP has not yet been installed as a separately created unpublished Shopify theme; app OAuth, multi-tenancy, publishing, rollback and high-variant products remain outstanding.
+
+Run locally: `npm run check && npm test && npm run build:theme && npm run check:theme`. Shopify Theme Check runs automatically in GitHub Actions.
