@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+node_modules/
+.DS_Store
+*.log
+*.sqlite
+*.db
+coverage/
+dist/
+
+# Generated QA artifacts
+tests/*.png
+tests/*.zip

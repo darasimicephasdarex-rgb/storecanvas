@@ -1,0 +1,59 @@
+name: StoreCanvas validation
+on:
+  push:
+    branches: [main, 'develop/**', 'feature/**']
+  pull_request:
+    branches: [main, 'develop/**']
+permissions:
+  contents: read
+jobs:
+  core-and-theme-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and reproducible runtime
+        run: npm run check
+      - name: Validate secure project API syntax
+        run: |
+          node --check app/server/auth.mjs
+          node --check app/server/store.mjs
+          node --check app/server/http.mjs
+          node --check app/server/serve.mjs
+          node --check app/server/token-vault.mjs
+          node --check app/server/shopify.mjs
+          node --check app/public/dashboard.js
+          node --check app/public/cloud.js
+      - name: All core, commerce and export tests
+        run: npm test
+      - name: Generate independent Shopify theme
+        run: npm run build:theme
+      - name: Validate generated theme structure and hashes
+        run: npm run check:theme
+      - name: Safe live-storefront QA runner self-test (offline)
+        run: |
+          python3 -m py_compile tests/live_storefront_smoke.py tests/keyframes_browser.py tests/browser_check.py
+          python3 tests/live_storefront_smoke.py --self-test
+      - name: Official Shopify Theme Check
+        uses: shopify/theme-check-action@v2
+        with:
+          theme_root: ./dist/shopify-theme
+          flags: --fail-level error
+      - name: Upload generated QA theme ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: storecanvas-theme-qa
+          path: dist/storecanvas-theme.zip
+          if-no-files-found: error
+          retention-days: 14
+      - name: Validate storefront JavaScript source
+        run: |
+          node --check editor/app.js
+          node --check editor/exporter.js
+          node --check shopify/assets/storecanvas-freeform.js
+          node --check editor/runtime.js
+          node --check engine/commerce.mjs
+          node --check engine/theme.mjs

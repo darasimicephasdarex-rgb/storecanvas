@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101815">
+<title>StoreCanvas Studio · Visual Theme Builder v0.5</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app-shell" id="app">
+  <header class="topbar">
+    <div class="brand"><div class="brand-symbol">◩</div><div><strong>StoreCanvas</strong><span>DESIGN STUDIO</span></div></div>
+    <div class="title-zone"><span class="crumb">Workspace <span class="crumb-sep">/</span></span><input id="projectName" aria-label="Project name" value="Botanical concept"><span class="save-status" id="saveStatus"><span class="dot"></span> Locally saved</span></div>
+    <div class="top-actions">
+      <button class="icon-btn" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
+      <button class="icon-btn" id="redoBtn" title="Redo (Ctrl+Y)" aria-label="Redo">↷</button>
+      <span class="separator"></span>
+      <button class="btn btn-outline" id="importBtn">Import</button>
+      <button class="btn btn-outline" id="saveBtn">Save JSON</button>
+      <button class="btn btn-primary" id="exportBtn">Export Shopify theme <span>↗</span></button>
+      <input hidden id="fileImport" type="file" accept=".json,application/json">
+    </div>
+  </header>
+  <aside class="sidebar leftbar">
+    <div class="sidebar-switch"><button data-panel="elements" class="active" aria-label="Elements">Elements</button><button data-panel="layers" aria-label="Layers">Layers</button><button data-panel="presets" aria-label="Presets">Presets</button></div>
+    <div class="panel-body" id="leftContent"></div>
+    <div class="left-footer"><span class="live-dot"></span><span>LOCAL-FIRST · FREE · OFFLINE</span><button id="newSectionBtn" title="Add section">＋</button></div>
+  </aside>
+  <main class="main-stage">
+    <div class="editor-toolbar">
+      <div class="toolbar-left"><strong>Home page</strong><span class="path-sep">/</span><span id="currentSectionName">Hero section</span><span class="chip">Freeform</span></div>
+      <div class="toolbar-middle" role="group" aria-label="Preview device"><button data-device="desktop" class="active" title="Desktop">▣ <span>Desktop</span></button><button data-device="tablet" title="Tablet">▤</button><button data-device="mobile" title="Mobile">▯</button></div>
+      <div class="toolbar-right"><label class="toggle-option"><input type="checkbox" id="snapCheck" checked> Snap 8px</label><button class="btn btn-quiet" id="playBtn">▶ Preview motion</button></div>
+    </div>
+    <div class="editor-scroll" id="editorScroll">
+      <div class="page-preview" id="pagePreview">
+        <div class="preview-header"><strong>OTOBE<span>.</span></strong><nav>HOME <span>COLLECTIONS</span> <span>OUR STORY</span> <span>↗</span></nav></div>
+        <div class="section-stack" id="sectionStack"></div>
+        <div class="preview-footer"><strong>OTOBE.</strong><span>Thoughtful design, naturally.</span></div>
+      </div>
+      <div class="editor-hint" id="editorHint">Drag layers on canvas · resize with the corner handle · double-click text to edit · Shift = precise movement</div>
+    </div>
+    <div class="timeline-wrap" id="timelineWrap">
+      <div class="timeline-header"><strong>◴ MOTION TIMELINE</strong><span id="timelineLabel">Select a layer to configure its animations</span><button id="replayBtn" title="Replay entrance animation">↻ Replay</button></div>
+      <div class="timeline-track" id="timelineTrack"></div>
+    </div>
+  </main>
+  <aside class="sidebar inspector">
+    <div class="inspector-header"><div><span class="eyebrow">PROPERTIES</span><h2 id="inspectorTitle">Canvas</h2></div><span class="inspector-icon">◈</span></div>
+    <div class="tabs" id="inspectorTabs"><button data-tab="design" class="active">Design</button><button data-tab="motion">Motion</button><button data-tab="content">Content</button></div>
+    <div class="inspector-body" id="inspectorContent"></div>
+    <div class="inspector-footer"><button class="btn btn-outline" id="duplicateBtn">⧉ Duplicate</button><button class="btn danger-outline" id="deleteBtn">Delete</button></div>
+  </aside>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="runtime.js"></script>
+<script src="exporter.js"></script>
+<script src="app.js"></script>
+</body></html>
