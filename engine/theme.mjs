@@ -15,6 +15,8 @@ body{margin:0;color:#183522;background:#fff;font-family:Arial,sans-serif}
 .sc-commerce-grid img,.sc-product-main img{width:100%;height:auto;object-fit:cover}.sc-commerce a{color:inherit}.sc-product-main{display:grid;grid-template-columns:1fr 1fr;gap:48px}
 .sc-cta{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border:0;border-radius:8px;background:#245538;color:white;padding:12px 24px;text-decoration:none;font-weight:700}
 .sc-commerce :is(input,select,button){font:inherit;max-width:100%}.sc-commerce input[type=number]{width:72px}.sc-commerce form{display:grid;gap:12px}.sc-product-price{font-size:1.5rem;font-weight:700}.sc-commerce label{font-weight:600}.sc-commerce button:disabled{opacity:.55;cursor:not-allowed}.sc-cart-actions{display:flex;flex-wrap:wrap;gap:12px}.sc-cta-secondary{background:#e1e7df;color:#183522}.sc-discount{color:#236643}.sc-product-placeholder{height:350px;background:#e7ecdf}
+.sc-visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.sc-option-selectors{display:grid;gap:8px;min-width:0}.sc-option-selectors select{min-height:44px;width:100%}
 .sc-cart-row{display:flex;align-items:center;gap:22px;border-bottom:1px solid #ddd;padding:18px 0}.sc-cart-row img{width:84px;height:98px;object-fit:cover}
 @media(max-width:700px){.sc-product-main{grid-template-columns:1fr}.sc-site-header{align-items:flex-start;flex-direction:column}}
 `;
@@ -73,7 +75,7 @@ export function compileShopifyTheme(project){
  for(const [name,body] of Object.entries(sections))files.set(`sections/${name}.liquid`,body);
  const templates={index:'storecanvas-home',product:'main-product',collection:'main-collection',cart:'main-cart',page:'main-page',search:'main-search','404':'main-404'};
  for(const [name,sectionName] of Object.entries(templates))files.set(`templates/${name}.json`,template(sectionName));
- files.set('config/settings_schema.json',JSON.stringify([{name:'theme_info',theme_name:'StoreCanvas Starter',theme_author:'StoreCanvas',theme_version:'0.6.0',theme_documentation_url:'https://shopify.dev/docs/storefronts/themes',theme_support_url:'https://shopify.dev/'}]));
+ files.set('config/settings_schema.json',JSON.stringify([{name:'theme_info',theme_name:'StoreCanvas Starter',theme_author:'StoreCanvas',theme_version:'0.8.0',theme_documentation_url:'https://shopify.dev/docs/storefronts/themes',theme_support_url:'https://shopify.dev/'}]));
  files.set('locales/en.default.json','{}');
  return files;
 }

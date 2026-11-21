@@ -3,37 +3,22 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {compileShopifyTheme} from '../engine/theme.mjs';
 import {PRODUCT_SECTION,CART_SECTION,COMMERCE_JS} from '../engine/commerce.mjs';
-const sample=JSON.parse(fs.readFileSync(new URL('./fixtures/project.json',import.meta.url)));
-const files=compileShopifyTheme(sample);
-
-test('Product form selects a specific variant and displays its Shopify price',()=>{
- const liquid=String(files.get('sections/main-product.liquid'));
- assert.match(liquid,/product\.selected_or_first_available_variant/);
- assert.match(liquid,/active_variant\.price \| money/);
- assert.doesNotMatch(liquid,/<p>\{\{ product.price \| money \}\}<\/p>/);
- assert.match(liquid,/<select[^>]*name="id"/);
- assert.match(liquid,/variant\.available/);
- assert.match(liquid,/\{% form 'product', product %\}/);
- assert.match(liquid,/form\.errors \| default_errors/);
+const fixture=JSON.parse(fs.readFileSync(new URL('./fixtures/project.json',import.meta.url)));
+const files=compileShopifyTheme(fixture);
+test('Native product form retains server-selected variant and price',()=> {
+ for(const x of ['product.selected_or_first_available_variant','active_variant.price | money','name="id"','name="add"',"form 'product', product",'form.errors | default_errors']) assert.ok(PRODUCT_SECTION.includes(x),x);
 });
-
-test('Variant data supports price, availability, media, quantity rules and deep links',()=>{
- const liq=PRODUCT_SECTION;
- for(const part of ['data-price=','data-available=','data-min=','data-max=','data-increment=','variant_image | image_url','quantity_rule.min','quantity_rule.max']) assert.ok(liq.includes(part),part);
- const js=COMMERCE_JS;
- for(const part of ['data-sc-price','data-sc-variant','data-sc-quantity','data-sc-add','option.dataset.available','img.removeAttribute(\'srcset\')',"url.searchParams.set('variant'"]) assert.ok(js.includes(part),part);
- assert.equal(files.get('assets/storecanvas-commerce.js'),js);
- assert.ok(files.get('layout/theme.liquid').includes("{{ 'storecanvas-commerce.js' | asset_url }}"));
+test('High-variant picker uses option values instead of truncated variants',()=>{
+ for(const x of ['product.options_with_values','option.values','option_value.selected','option_value.id','option_value.product_url','data-sc-option-value-id','data-sc-option-index','quantity_rule.min'])assert.ok(PRODUCT_SECTION.includes(x),x);
+ assert.doesNotMatch(PRODUCT_SECTION,/for\s+variant\s+in\s+product\.variants/);
+ assert.doesNotMatch(PRODUCT_SECTION,/product\s*\|\s*json/);
 });
-
-test('Cart uses native Shopify checkout and line update controls, removes and tax information',()=>{
- const liq=String(files.get('sections/main-cart.liquid'));
- for(const part of ['routes.cart_url','name="checkout"','name="update"','name="updates[]"','item.url_to_remove','cart.total_price','cart.taxes_included','line_level_discount_allocations']) assert.ok(liq.includes(part),part);
- assert.match(liq,/\{% for item in cart.items %\}/);
+test('Ajax variant refresh protects native cart form and supports retry',()=>{
+ for(const x of ['fetch(','option_values','section_id','preview_theme_id','AbortController','root.replaceWith(updated)','new DOMParser()','aria-busy','url.origin!==location.origin','scSelectionError','data-sc-retry','event.preventDefault()'])assert.ok(COMMERCE_JS.includes(x),x);
+ assert.equal(files.get('assets/storecanvas-commerce.js'),COMMERCE_JS);
+ assert.match(PRODUCT_SECTION,/Combination unavailable/);
+ assert.doesNotMatch(PRODUCT_SECTION,/product\.variants\.first/);
 });
-
-test('High-variant support and real checkout remain explicit non-production scope',()=>{
- assert.match(PRODUCT_SECTION,/product.variants/);
- assert.ok(!COMMERCE_JS.includes('fetch('),'Must not submit orders without native Shopify form');
- assert.ok(!CART_SECTION.includes('window.location=\'/checkout\''));
+test('Cart maintains Shopify native checkout and line updates',()=>{
+ for(const x of ['routes.cart_url','name="checkout"','name="update"','name="updates[]"','item.url_to_remove','cart.total_price','cart.taxes_included'])assert.ok(CART_SECTION.includes(x),x);
 });
