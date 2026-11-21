@@ -23,6 +23,8 @@ jobs:
         run: npm run build:theme
       - name: Validate generated theme structure and hashes
         run: npm run check:theme
+      - name: Python syntax check for optional Chromium regression
+        run: python3 -m py_compile tests/high_variant_browser.py
       - name: Official Shopify Theme Check
         uses: shopify/theme-check-action@v2
         with:
