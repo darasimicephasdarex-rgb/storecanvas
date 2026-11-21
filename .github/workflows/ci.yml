@@ -23,6 +23,9 @@ jobs:
         run: |
           node --check editor/app.js
           node --check editor/exporter.js
+          node --check editor/runtime.js
+          node --check engine/theme.mjs
+          node --check engine/zip.mjs
           node --check shopify/assets/storecanvas-freeform.js
           test -s shopify/sections/storecanvas-freeform.liquid
           test -s shopify/assets/storecanvas-freeform.css
