@@ -102,3 +102,8 @@ See `app/README.md` and `app/.env.example` for the exact endpoints and security 
 No production app installation, merchant OAuth/token exchange, cloud database, or public API hosting has occurred.
 The v0.10 independent theme remains unpublished; real add-to-cart and checkout click QA
 remains blocked on interactive browser access.
+
+
+## v0.12 — Shopify embedded app development foundation
+
+A Shopify App Bridge dashboard at `/app/` can create/import/list/delete encrypted shop-scoped projects and open the full visual editor at `/app/editor/`. Drafts use revision-controlled Cloud Save. Offline Shopify token exchange and read-only catalog calls run server-side; an encrypted vault never exposes Admin tokens in the browser. See `app/INSTALL.md` for registration, HTTPS, privacy and production prerequisites. The independent theme exporter is unchanged. **This is a tested development scaffold, not a publicly deployed or registered app.**

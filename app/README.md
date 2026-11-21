@@ -39,3 +39,7 @@ The raw request is verified with Shopify's base64 HMAC-SHA256 before reading the
 Run `npm test` for the unit and HTTP integration checks. No paid service is required for the local tests.
 
 **Concurrency boundary:** Per-shop writes and erasure use one in-process lock, preventing an in-flight write from restoring a shop after a deletion in this single-instance development process. This does not protect a multi-instance deployment.
+
+
+## v0.12 embedded app upgrade
+Dashboard at `/app/`, authenticated draft saving at `/app/editor/`, Shopify offline-token exchange at `/api/install/exchange`, read-only `/api/catalog` and encrypted OAuth vault. See `app/INSTALL.md`. This is not yet deployed or registered.

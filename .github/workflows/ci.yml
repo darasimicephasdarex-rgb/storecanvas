@@ -23,6 +23,10 @@ jobs:
           node --check app/server/store.mjs
           node --check app/server/http.mjs
           node --check app/server/serve.mjs
+          node --check app/server/token-vault.mjs
+          node --check app/server/shopify.mjs
+          node --check app/public/dashboard.js
+          node --check app/public/cloud.js
       - name: All core, commerce and export tests
         run: npm test
       - name: Generate independent Shopify theme

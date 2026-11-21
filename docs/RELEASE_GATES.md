@@ -99,3 +99,13 @@ No live theme publishing performed. App deployment not begun. GitHub draft PR is
 - [ ] Official Shopify app installation, token exchange, merchant sessions, webhooks registration, real multi-tenant database and hosting.
 - [ ] Real cart and checkout browser interaction on a Shopify test store.
 - [ ] Signed webhook replay/idempotency durability, production retention and audit controls.
+
+
+## v0.12 embedded app scaffold — 2026-11-21
+- [x] Shopify App Bridge ID-token auth protects shop-scoped APIs.
+- [x] Authenticated offline token exchange, AES-GCM shop-scoped vault, read-only catalog and uninstall token deletion.
+- [x] Responsive embedded dashboard and cloud-draft editor with revision checks.
+- [x] 43 Node tests locally and offline Chromium dashboard/editor smoke passed.
+- [ ] Real registered app installation, HTTPS deployment, multi-merchant sessions and production database.
+- [ ] Merchant-controlled theme extension/publish/rollback, interactive cart-to-checkout, accessibility and security audit.
+**Do not claim this app is live or production-ready.**
