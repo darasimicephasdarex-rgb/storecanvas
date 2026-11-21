@@ -206,7 +206,7 @@ function bindEvents(){
  $('#projectName').addEventListener('change',e=>change(()=>project.name=e.target.value.slice(0,120),false));
  $('#undoBtn').onclick=undo;$('#redoBtn').onclick=redo;$('#saveBtn').onclick=exportJSON;$('#importBtn').onclick=()=>$('#fileImport').click();
  $('#fileImport').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{let data=JSON.parse(await f.text());if(data.version!==2)data=importLegacy(data);data=validateProject(data);change(()=>{project=data;ui.sectionId=data.sections[0].id;ui.selectedId=data.sections[0].layers[0]?.id;ui.playing=false});notify('Project imported successfully')}catch(err){notify('Could not import: '+err.message)}e.target.value=''};
- $('#exportBtn').onclick=async()=>{try{const zip=await window.SCExporter.exportTheme(clone(project));download('storecanvas-v0.2-shopify-theme.zip',zip);notify('Shopify theme ZIP generated · test on a draft theme')}catch(e){console.error(e);notify('Export failed: '+e.message)}};
+ $('#exportBtn').onclick=async()=>{try{const zip=await window.SCExporter.exportTheme(clone(project));download('storecanvas-v0.5-shopify-theme.zip',zip);notify('Validated Shopify theme ZIP generated · test on an unpublished theme')}catch(e){console.error(e);notify('Export failed: '+e.message)}};
  $('#playBtn').onclick=()=>togglePlay();$('#replayBtn').onclick=()=>{togglePlay(true);notify('Animations replayed')};
  $('#snapCheck').onchange=e=>{project.settings.snap=e.target.checked;saveLocal()};
  $$('#inspectorTabs [data-tab]').forEach(el=>el.onclick=()=>{ui.tab=el.dataset.tab;renderInspector()});
