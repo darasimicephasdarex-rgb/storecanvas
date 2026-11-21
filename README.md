@@ -47,3 +47,7 @@ Optional browser regression: `python tests/browser_check.py` (requires locally i
 - Haptic vibration is optional and hardware/browser dependent; reduced-motion preferences disable animations.
 - The exporter does not request or store Shopify API credentials. Uploaded images are processed locally.
 - The connected live storefront was not modified by this release.
+
+## v0.6 — Shopify commerce QA milestone
+
+Generated Shopify product and cart sections now support selected variant price/media, availability, quantity-rule updates, cart line updates/removal, discounts and tax messaging. Commerce interactions use native Shopify forms; no checkout simulation or order placement occurs automatically. Run `npm test`, `npm run check`, and the optional Playwright browser smoke test. See `docs/SHOPIFY_QA_2026-11-21.md` for verified scope and outstanding risks. **This is not a production-ready theme or SaaS.**

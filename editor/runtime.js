@@ -117,14 +117,118 @@ const BASE_CSS = `*,*::before,*::after{box-sizing:border-box}.sc-page{display:gr
 const BEHAVIOR_JS = `(()=>{'use strict';const reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;let io=null;const motion=document.querySelectorAll('.sc-layer[data-motion]');if(!reduced){if('IntersectionObserver'in window){io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('sc-visible');io.unobserve(e.target)}}));motion.forEach(n=>{if(n.dataset.trigger==='scroll')io.observe(n);else n.classList.add('sc-visible')})}else motion.forEach(n=>n.classList.add('sc-visible'))}const timers=[];document.querySelectorAll('.sc-slideshow').forEach(el=>{const slides=[...el.querySelectorAll('.sc-slide')];if(!slides.length)return;let i=0,paused=reduced||el.dataset.autoplay!=='true';const paint=()=>slides.forEach((s,j)=>{s.hidden=j!==i});const toggle=el.querySelector('[data-pause]');const sync=()=>{toggle.textContent=paused?'Play':'Pause';toggle.setAttribute('aria-label',paused?'Play slideshow':'Pause slideshow')};const advance=n=>{i=(n+slides.length)%slides.length;paint()};el.querySelector('[data-prev]').addEventListener('click',()=>advance(i-1));el.querySelector('[data-next]').addEventListener('click',()=>advance(i+1));toggle.addEventListener('click',()=>{paused=!paused;sync()});el.addEventListener('focusin',()=>{paused=true;sync()});el.addEventListener('mouseenter',()=>{paused=true;sync()});const ms=Math.max(1800,Number(el.dataset.interval)||4000);timers.push(setInterval(()=>{if(!paused&&!document.hidden)advance(i+1)},ms));sync();paint()});document.addEventListener('click',e=>{const t=e.target.closest('[data-haptic]');if(!t||window.SC_HAPTICS_ENABLED!==true||!navigator.vibrate)return;try{const h=t.dataset.haptic;if(h!=='off')navigator.vibrate(h==='medium'?24:12)}catch{}});addEventListener('pagehide',()=>{timers.forEach(clearInterval);if(io)io.disconnect()},{once:true})})();`;
 function fullHTML(input){const out=renderPreview(input);return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHTML(out.document.name)}</title><style>${out.css}</style></head><body><main class="sc-page">${out.html}</main><script>${out.js.replace(/<\/script/gi,'<\\/script')}<\/script></body></html>`.replace('<\\/script>','</script>');}
 
+
 /* engine/builtin-images.mjs */
 /* Generated from editor/assets/*.svg: deterministic self-contained export assets. */
-const BUILTIN_IMAGES = Object.freeze({"plant":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 600\" role=\"img\" aria-label=\"Illustrated potted plant\"><defs><linearGradient id=\"leaf\" x1=\"0\" x2=\"1\" y2=\"1\"><stop stop-color=\"#5a9361\"/><stop offset=\"1\" stop-color=\"#214a32\"/></linearGradient><linearGradient id=\"pot\" x1=\"0\" x2=\"1\"><stop stop-color=\"#dce3d3\"/><stop offset=\"1\" stop-color=\"#a8b7a3\"/></linearGradient></defs><ellipse cx=\"320\" cy=\"562\" rx=\"145\" ry=\"16\" fill=\"#1b3a2a\" opacity=\".12\"/><path d=\"M220 344h200l-27 196H248z\" fill=\"url(#pot)\"/><path d=\"M210 339q110-16 220 0v21H210z\" fill=\"#e7ebdf\"/><g fill=\"none\" stroke=\"#315f3d\" stroke-width=\"8\"><path d=\"M320 345Q230 215 180 118\"/><path d=\"M320 345Q363 182 460 100\"/><path d=\"M320 345Q290 192 313 72\"/><path d=\"M320 345Q220 285 105 262\"/><path d=\"M320 345Q402 279 531 252\"/></g><g fill=\"url(#leaf)\"><ellipse cx=\"183\" cy=\"125\" rx=\"48\" ry=\"79\" transform=\"rotate(-42 183 125)\"/><ellipse cx=\"260\" cy=\"174\" rx=\"42\" ry=\"70\" transform=\"rotate(42 260 174)\"/><ellipse cx=\"315\" cy=\"94\" rx=\"50\" ry=\"82\" transform=\"rotate(-12 315 94)\"/><ellipse cx=\"382\" cy=\"177\" rx=\"48\" ry=\"70\" transform=\"rotate(-33 382 177)\"/><ellipse cx=\"465\" cy=\"103\" rx=\"50\" ry=\"82\" transform=\"rotate(42 465 103)\"/><ellipse cx=\"115\" cy=\"265\" rx=\"41\" ry=\"64\" transform=\"rotate(-67 115 265)\"/><ellipse cx=\"526\" cy=\"252\" rx=\"40\" ry=\"68\" transform=\"rotate(65 526 252)\"/></g></svg>","fern":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 720 520\" role=\"img\" aria-label=\"Botanical fern design\"><defs><linearGradient id=\"b\" x2=\"0\" y2=\"1\"><stop stop-color=\"#d6ddca\"/><stop offset=\"1\" stop-color=\"#8dac8a\"/></linearGradient></defs><rect width=\"720\" height=\"520\" fill=\"url(#b)\"/><path d=\"M360 500Q330 280 365 65\" fill=\"none\" stroke=\"#325f3c\" stroke-width=\"12\"/><g fill=\"#28683f\"><ellipse cx=\"275\" cy=\"116\" rx=\"84\" ry=\"25\" transform=\"rotate(35 275 116)\"/><ellipse cx=\"445\" cy=\"144\" rx=\"84\" ry=\"25\" transform=\"rotate(-35 445 144)\"/><ellipse cx=\"260\" cy=\"220\" rx=\"90\" ry=\"27\" transform=\"rotate(24 260 220)\"/><ellipse cx=\"468\" cy=\"259\" rx=\"90\" ry=\"27\" transform=\"rotate(-25 468 259)\"/><ellipse cx=\"276\" cy=\"330\" rx=\"84\" ry=\"28\" transform=\"rotate(24 276 330)\"/><ellipse cx=\"470\" cy=\"375\" rx=\"84\" ry=\"28\" transform=\"rotate(-25 470 375)\"/></g></svg>","architecture":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 720 600\" role=\"img\" aria-label=\"Botanical architecture illustration\"><rect width=\"720\" height=\"600\" fill=\"#eae9da\"/><path d=\"M0 520L720 485V600H0z\" fill=\"#b3bca7\"/><rect x=\"122\" y=\"105\" width=\"482\" height=\"399\" rx=\"9\" fill=\"#d7d5c4\"/><rect x=\"157\" y=\"145\" width=\"412\" height=\"310\" fill=\"#aabfb5\"/><path d=\"M356 140v325M157 301h412\" stroke=\"#f6f2e7\" stroke-width=\"15\"/><path d=\"M155 455h422\" stroke=\"#596c57\" stroke-width=\"16\"/><g fill=\"#4f7b56\"><ellipse cx=\"251\" cy=\"404\" rx=\"79\" ry=\"101\"/><ellipse cx=\"468\" cy=\"398\" rx=\"78\" ry=\"99\"/></g><rect x=\"227\" y=\"420\" width=\"57\" height=\"87\" fill=\"#e1dfc9\"/><rect x=\"444\" y=\"420\" width=\"57\" height=\"87\" fill=\"#e1dfc9\"/></svg>","detail":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 720 600\" role=\"img\" aria-label=\"Plant in an editorial interior\"><rect width=\"720\" height=\"600\" fill=\"#eef1e8\"/><rect x=\"50\" y=\"55\" width=\"620\" height=\"490\" rx=\"20\" fill=\"#dce5d7\"/><rect x=\"90\" y=\"100\" width=\"540\" height=\"330\" rx=\"11\" fill=\"#a6c4a8\"/><path d=\"M357 480V240\" stroke=\"#3d6648\" stroke-width=\"11\"/><g fill=\"#377047\"><ellipse cx=\"261\" cy=\"259\" rx=\"92\" ry=\"38\" transform=\"rotate(28 261 259)\"/><ellipse cx=\"433\" cy=\"213\" rx=\"105\" ry=\"39\" transform=\"rotate(-28 433 213)\"/><ellipse cx=\"306\" cy=\"159\" rx=\"77\" ry=\"38\" transform=\"rotate(-36 306 159)\"/><ellipse cx=\"460\" cy=\"347\" rx=\"75\" ry=\"31\" transform=\"rotate(35 460 347)\"/></g><path d=\"M288 415h140l-24 111h-91z\" fill=\"#c6b49a\"/><path d=\"M278 413h160v24H278z\" fill=\"#a99377\"/></svg>"});
+const BUILTIN_IMAGES = Object.freeze({"fern":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 660 700\"><defs><linearGradient id=\"a\" x2=\"1\" y2=\"1\"><stop stop-color=\"#dce8c9\"/><stop offset=\"1\" stop-color=\"#a9bd9d\"/></linearGradient></defs><rect width=\"660\" height=\"700\" fill=\"url(#a)\"/><circle cx=\"501\" cy=\"145\" r=\"170\" fill=\"#f5efe0\" opacity=\".6\"/><g stroke=\"#476f4e\" stroke-width=\"8\" fill=\"none\" stroke-linecap=\"round\"><path d=\"M303 688Q360 410 263 160\"/><path d=\"M320 688Q223 393 99 318\"/><path d=\"M335 689Q409 407 537 265\"/></g><g fill=\"#376b43\"><ellipse cx=\"240\" cy=\"200\" rx=\"100\" ry=\"30\" transform=\"rotate(36 240 200)\"/><ellipse cx=\"317\" cy=\"260\" rx=\"100\" ry=\"32\" transform=\"rotate(-43 317 260)\"/><ellipse cx=\"180\" cy=\"333\" rx=\"110\" ry=\"36\" transform=\"rotate(32 180 333)\"/><ellipse cx=\"382\" cy=\"385\" rx=\"110\" ry=\"35\" transform=\"rotate(-45 382 385)\"/><ellipse cx=\"195\" cy=\"478\" rx=\"114\" ry=\"39\" transform=\"rotate(38 195 478)\"/><ellipse cx=\"423\" cy=\"503\" rx=\"111\" ry=\"37\" transform=\"rotate(-27 423 503)\"/></g></svg>","architecture":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 660 700\"><rect width=\"660\" height=\"700\" fill=\"#e4e2d3\"/><path d=\"M0 420h660v280H0z\" fill=\"#c5c4ae\"/><path d=\"M135 55h440v560H135z\" fill=\"#bec9b8\"/><path d=\"M161 80h378v478H161z\" fill=\"#f4f1e6\"/><path d=\"M211 80v478M350 80v478M490 80v478M161 315h378\" stroke=\"#b1b8a4\" stroke-width=\"15\"/><circle cx=\"285\" cy=\"330\" r=\"155\" fill=\"#edebb9\" opacity=\".6\"/><path d=\"M323 650Q302 465 236 282M320 648Q375 467 479 381\" stroke=\"#50734b\" stroke-width=\"11\" fill=\"none\"/><g fill=\"#42764c\"><ellipse cx=\"225\" cy=\"298\" rx=\"101\" ry=\"41\" transform=\"rotate(30 225 298)\"/><ellipse cx=\"340\" cy=\"365\" rx=\"99\" ry=\"42\" transform=\"rotate(-40 340 365)\"/><ellipse cx=\"460\" cy=\"388\" rx=\"100\" ry=\"37\" transform=\"rotate(-28 460 388)\"/><ellipse cx=\"244\" cy=\"464\" rx=\"117\" ry=\"42\" transform=\"rotate(36 244 464)\"/><ellipse cx=\"398\" cy=\"532\" rx=\"100\" ry=\"45\" transform=\"rotate(-29 398 532)\"/></g><path d=\"M252 583h160l-20 115H275z\" fill=\"#d7a77c\"/></svg>","detail":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 660 700\"><defs><linearGradient id=\"c\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop stop-color=\"#b5cdb5\"/><stop offset=\"1\" stop-color=\"#5f805e\"/></linearGradient></defs><rect width=\"660\" height=\"700\" fill=\"url(#c)\"/><circle cx=\"515\" cy=\"149\" r=\"240\" fill=\"#f2e9cf\" opacity=\".24\"/><g stroke=\"#c4d4ae\" stroke-width=\"7\" fill=\"none\"><path d=\"M95 700Q345 421 490 100\"/><path d=\"M190 700Q396 459 585 389\"/></g><g fill=\"#244d30\"><ellipse cx=\"360\" cy=\"298\" rx=\"132\" ry=\"65\" transform=\"rotate(29 360 298)\"/><ellipse cx=\"464\" cy=\"150\" rx=\"131\" ry=\"61\" transform=\"rotate(-38 464 150)\"/><ellipse cx=\"278\" cy=\"477\" rx=\"123\" ry=\"67\" transform=\"rotate(-20 278 477)\"/><ellipse cx=\"480\" cy=\"491\" rx=\"132\" ry=\"58\" transform=\"rotate(23 480 491)\"/><ellipse cx=\"182\" cy=\"598\" rx=\"145\" ry=\"67\" transform=\"rotate(30 182 598)\"/></g><g fill=\"none\" stroke=\"#68966d\" stroke-width=\"4\"><path d=\"M235 596l253-442M287 464l184 40M363 293l-8-8\"/></g></svg>","plant":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 600\"><defs><linearGradient id=\"pot\" x1=\"0\" x2=\"1\"><stop stop-color=\"#cfddc8\"/><stop offset=\".55\" stop-color=\"#f1ead7\"/><stop offset=\"1\" stop-color=\"#a5b99a\"/></linearGradient><radialGradient id=\"light\"><stop stop-color=\"#e8ead5\"/><stop offset=\"1\" stop-color=\"#e9eddd\" stop-opacity=\"0\"/></radialGradient></defs><ellipse cx=\"337\" cy=\"490\" rx=\"172\" ry=\"24\" fill=\"#76907b\" opacity=\".12\"/><circle cx=\"325\" cy=\"295\" r=\"245\" fill=\"url(#light)\"/><g fill=\"none\" stroke=\"#53784d\" stroke-width=\"6\" stroke-linecap=\"round\"><path d=\"M320 410Q316 260 253 130\"/><path d=\"M318 392Q377 241 462 144\"/><path d=\"M314 375Q226 292 135 243\"/><path d=\"M310 339Q410 310 485 305\"/><path d=\"M313 360Q255 217 350 80\"/><path d=\"M313 395Q400 405 502 440\"/></g><g fill=\"#4d8651\"><ellipse cx=\"228\" cy=\"152\" rx=\"53\" ry=\"27\" transform=\"rotate(38 228 152)\"/><ellipse cx=\"281\" cy=\"124\" rx=\"57\" ry=\"27\" transform=\"rotate(-23 281 124)\"/><ellipse cx=\"359\" cy=\"107\" rx=\"65\" ry=\"31\" transform=\"rotate(-30 359 107)\"/><ellipse cx=\"442\" cy=\"169\" rx=\"68\" ry=\"32\" transform=\"rotate(-44 442 169)\"/><ellipse cx=\"153\" cy=\"222\" rx=\"67\" ry=\"29\" transform=\"rotate(27 153 222)\"/><ellipse cx=\"227\" cy=\"286\" rx=\"56\" ry=\"27\" transform=\"rotate(40 227 286)\"/><ellipse cx=\"467\" cy=\"313\" rx=\"66\" ry=\"29\" transform=\"rotate(-14 467 313)\"/><ellipse cx=\"492\" cy=\"428\" rx=\"55\" ry=\"28\" transform=\"rotate(19 492 428)\"/></g><g fill=\"#77a96b\"><ellipse cx=\"227\" cy=\"201\" rx=\"54\" ry=\"26\" transform=\"rotate(-33 227 201)\"/><ellipse cx=\"388\" cy=\"180\" rx=\"65\" ry=\"31\" transform=\"rotate(30 388 180)\"/><ellipse cx=\"165\" cy=\"287\" rx=\"60\" ry=\"26\" transform=\"rotate(-22 165 287)\"/><ellipse cx=\"417\" cy=\"276\" rx=\"58\" ry=\"29\" transform=\"rotate(28 417 276)\"/><ellipse cx=\"405\" cy=\"408\" rx=\"63\" ry=\"29\" transform=\"rotate(41 405 408)\"/></g><path d=\"M238 392h173l-20 147q-65 27-132 0z\" fill=\"url(#pot)\"/><ellipse cx=\"325\" cy=\"391\" rx=\"88\" ry=\"19\" fill=\"#dce4c9\"/><ellipse cx=\"325\" cy=\"393\" rx=\"76\" ry=\"11\" fill=\"#788066\"/><path d=\"M260 416q-7 80 5 112\" fill=\"none\" stroke=\"#fff\" stroke-opacity=\".42\" stroke-width=\"8\"/></svg>"});
+
+
+/* engine/commerce.mjs */
+/** StoreCanvas commerce primitives for the generated independent starter theme.
+ * Server-rendered Liquid is the source of truth. JS progressively updates product
+ * variant price/media/quantity and never bypasses native Shopify forms. */
+const PRODUCT_SECTION = String.raw`{% liquid
+  assign active_variant = product.selected_or_first_available_variant
+  if active_variant == blank
+    assign active_variant = product.first_available_variant | default: product.variants.first
+  endif
+  assign active_image = active_variant.featured_image | default: product.featured_image
+%}
+<section class="sc-commerce sc-product-main" data-sc-product>
+  <div class="sc-product-media">
+    {% if active_image != blank %}
+      {{ active_image | image_url: width: 1200 | image_tag: loading: 'eager', widths: '360, 720, 960, 1200', alt: product.title }}
+    {% else %}
+      <div class="sc-product-placeholder" role="img" aria-label="No product photograph available"></div>
+    {% endif %}
+  </div>
+  <div class="sc-product-info">
+    <h1>{{ product.title | escape }}</h1>
+    {% if active_variant != blank %}
+      <p class="sc-product-price" data-sc-price aria-live="polite">{{ active_variant.price | money }}</p>
+    {% endif %}
+    <div class="sc-product-description">{{ product.description }}</div>
+    {% form 'product', product %}
+      {{ form.errors | default_errors }}
+      {% if active_variant != blank %}
+        <label for="sc-variant-{{ section.id }}">Choose a variant</label>
+        <select id="sc-variant-{{ section.id }}" name="id" data-sc-variant>
+          {% for variant in product.variants %}
+            {% assign variant_image = variant.featured_image | default: product.featured_image %}
+            <option value="{{ variant.id }}" data-price="{{ variant.price | money | escape }}" data-available="{{ variant.available }}" data-min="{{ variant.quantity_rule.min | default: 1 }}" data-max="{{ variant.quantity_rule.max }}" data-increment="{{ variant.quantity_rule.increment | default: 1 }}" {% if variant_image != blank %}data-image="{{ variant_image | image_url: width: 1200 | escape }}"{% endif %} {% if variant.id == active_variant.id %}selected{% endif %} {% unless variant.available %}disabled{% endunless %}>{{ variant.title | escape }} — {{ variant.price | money }}{% unless variant.available %} (Sold out){% endunless %}</option>
+          {% endfor %}
+        </select>
+        <label for="sc-qty-{{ section.id }}">Quantity</label>
+        <input id="sc-qty-{{ section.id }}" data-sc-quantity type="number" name="quantity" min="{{ active_variant.quantity_rule.min | default: 1 }}" {% if active_variant.quantity_rule.max != blank %}max="{{ active_variant.quantity_rule.max }}"{% endif %} step="{{ active_variant.quantity_rule.increment | default: 1 }}" value="{{ active_variant.quantity_rule.min | default: 1 }}" required>
+        <button class="sc-cta" type="submit" name="add" data-sc-add {% unless active_variant.available %}disabled{% endunless %}>{% if active_variant.available %}Add to cart{% else %}Sold out{% endif %}</button>
+      {% else %}
+        <p role="status">This product is unavailable.</p>
+      {% endif %}
+    {% endform %}
+  </div>
+</section>`;
+
+const CART_SECTION = String.raw`<section class="sc-commerce sc-cart" aria-labelledby="sc-cart-title">
+  <h1 id="sc-cart-title">Your cart</h1>
+  {% if cart.item_count == 0 %}
+    <p>Your cart is empty. <a href="{{ routes.all_products_collection_url }}">Continue shopping</a>.</p>
+  {% else %}
+    <form method="post" action="{{ routes.cart_url }}" id="sc-cart-form">
+      {% for item in cart.items %}
+        <div class="sc-cart-row">
+          {% if item.image != blank %}{{ item.image | image_url: width: 180 | image_tag: loading: 'lazy', alt: item.product.title }}{% endif %}
+          <div class="sc-cart-detail">
+            <a href="{{ item.url }}">{{ item.product.title | escape }}</a>
+            {% unless item.variant.title == 'Default Title' %}<p>{{ item.variant.title | escape }}</p>{% endunless %}
+            <p>{{ item.final_line_price | money }}</p>
+            {% for discount in item.line_level_discount_allocations %}
+              <p class="sc-discount">{{ discount.discount_application.title | escape }}: -{{ discount.amount | money }}</p>
+            {% endfor %}
+            <a href="{{ item.url_to_remove }}" aria-label="Remove {{ item.product.title | escape }}">Remove</a>
+          </div>
+          <label class="sc-cart-quantity">Quantity
+            <input type="number" name="updates[]" min="0" value="{{ item.quantity }}" aria-label="Quantity for {{ item.product.title | escape }}">
+          </label>
+        </div>
+      {% endfor %}
+      {% for discount in cart.cart_level_discount_applications %}
+        <p class="sc-discount">{{ discount.title | escape }}: -{{ discount.total_allocated_amount | money }}</p>
+      {% endfor %}
+      <p class="sc-cart-subtotal">Subtotal: {{ cart.total_price | money }}</p>
+      {% if cart.taxes_included %}<p>Taxes are included.</p>{% else %}<p>Taxes and shipping are calculated at checkout.</p>{% endif %}
+      <div class="sc-cart-actions">
+        <button type="submit" class="sc-cta sc-cta-secondary" name="update">Update cart</button>
+        <button type="submit" class="sc-cta" name="checkout">Checkout</button>
+      </div>
+    </form>
+  {% endif %}
+</section>`;
+
+const COMMERCE_JS = String.raw`(()=>{'use strict';
+const sync=form=>{const select=form.querySelector('[data-sc-variant]');if(!select)return;
+const option=select.selectedOptions[0];if(!option)return;
+const price=form.querySelector('[data-sc-price]');if(price)price.textContent=option.dataset.price||'';
+const quantity=form.querySelector('[data-sc-quantity]');if(quantity){
+const min=Math.max(1,Number(option.dataset.min)||1),step=Math.max(1,Number(option.dataset.increment)||1),max=Number(option.dataset.max);
+quantity.min=String(min);quantity.step=String(step);
+if(option.dataset.max && Number.isFinite(max) && max>0)quantity.max=String(max);else quantity.removeAttribute('max');
+if(!Number.isFinite(Number(quantity.value))||Number(quantity.value)<min||(quantity.hasAttribute('max')&&Number(quantity.value)>max))quantity.value=String(min);
+}
+const available=option.dataset.available==='true';const add=form.querySelector('[data-sc-add]');if(add){add.disabled=!available;add.textContent=available?'Add to cart':'Sold out'}
+const url=option.dataset.image;const img=form.querySelector('.sc-product-media img');if(url&&img){img.removeAttribute('srcset');img.removeAttribute('sizes');img.src=url;}
+};
+document.querySelectorAll('[data-sc-product]').forEach(sync);
+document.addEventListener('change',event=>{const select=event.target.closest('[data-sc-variant]');if(!select)return;
+const form=select.closest('[data-sc-product]');if(form)sync(form);
+try{const url=new URL(location.href);url.searchParams.set('variant',select.value);history.replaceState(history.state,'',url.toString())}catch{}
+});
+})();`;
 
 
 /* engine/theme.mjs */
 /** StoreCanvas v0.5: one validated preview document => Shopify Online Store 2.0 package.
  * Pure ESM; no auth, network access, or live theme publishing. */
+
 
 
 const schema = json => `{% schema %}${JSON.stringify(json)}{% endschema %}`;
@@ -137,15 +241,15 @@ body{margin:0;color:#183522;background:#fff;font-family:Arial,sans-serif}
 .sc-commerce{max-width:1150px;margin:30px auto;padding:24px}.sc-commerce-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px}
 .sc-commerce-grid img,.sc-product-main img{width:100%;height:auto;object-fit:cover}.sc-commerce a{color:inherit}.sc-product-main{display:grid;grid-template-columns:1fr 1fr;gap:48px}
 .sc-cta{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border:0;border-radius:8px;background:#245538;color:white;padding:12px 24px;text-decoration:none;font-weight:700}
-.sc-commerce :is(input,select,button){font:inherit;max-width:100%}.sc-commerce input[type=number]{width:72px}.sc-commerce form{display:grid;gap:12px}
+.sc-commerce :is(input,select,button){font:inherit;max-width:100%}.sc-commerce input[type=number]{width:72px}.sc-commerce form{display:grid;gap:12px}.sc-product-price{font-size:1.5rem;font-weight:700}.sc-commerce label{font-weight:600}.sc-commerce button:disabled{opacity:.55;cursor:not-allowed}.sc-cart-actions{display:flex;flex-wrap:wrap;gap:12px}.sc-cta-secondary{background:#e1e7df;color:#183522}.sc-discount{color:#236643}.sc-product-placeholder{height:350px;background:#e7ecdf}
 .sc-cart-row{display:flex;align-items:center;gap:22px;border-bottom:1px solid #ddd;padding:18px 0}.sc-cart-row img{width:84px;height:98px;object-fit:cover}
 @media(max-width:700px){.sc-product-main{grid-template-columns:1fr}.sc-site-header{align-items:flex-start;flex-direction:column}}
 `;
 const header = section('StoreCanvas header', `<header class="sc-site-header"><a href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }} home"><strong>{{ shop.name | escape }}</strong></a><nav class="sc-site-nav" aria-label="Main navigation"><a href="{{ routes.root_url }}">Home</a><a href="{{ routes.all_products_collection_url }}">Shop</a><a href="{{ routes.cart_url }}">Cart ({{ cart.item_count }})</a></nav></header>`);
 const footer = section('StoreCanvas footer', `<footer class="sc-site-footer"><span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name | escape }}</span><a href="{{ routes.root_url }}">Home</a></footer>`);
-const product = section('StoreCanvas product', `<div class="sc-commerce sc-product-main">{% if product.featured_image %}{{ product.featured_image | image_url: width: 1400 | image_tag: loading: 'eager' }}{% endif %}<div><h1>{{ product.title | escape }}</h1><p>{{ product.price | money }}</p><div>{{ product.description }}</div>{% form 'product', product %}<label for="sc-variant">Variant</label><select id="sc-variant" name="id">{% for v in product.variants %}<option value="{{ v.id }}" {% if v == product.selected_or_first_available_variant %}selected{% endif %} {% unless v.available %}disabled{% endunless %}>{{ v.title | escape }} – {{ v.price | money }}</option>{% endfor %}</select><label for="sc-quantity">Quantity</label><input id="sc-quantity" type="number" name="quantity" min="1" value="1"><button class="sc-cta" type="submit" {% unless product.available %}disabled{% endunless %}>{% if product.available %}Add to cart{% else %}Sold out{% endif %}</button>{% endform %}</div></div>`);
+const product = section('StoreCanvas product', PRODUCT_SECTION);
 const collection = section('StoreCanvas collection', `<div class="sc-commerce"><h1>{{ collection.title | escape }}</h1><div>{{ collection.description }}</div>{% paginate collection.products by 24 %}<div class="sc-commerce-grid">{% for p in collection.products %}<a href="{{ p.url }}">{% if p.featured_image %}{{ p.featured_image | image_url: width: 640 | image_tag: loading: 'lazy' }}{% endif %}<h2>{{ p.title | escape }}</h2><p>{{ p.price | money }}</p></a>{% endfor %}</div>{{ paginate | default_pagination }}{% endpaginate %}</div>`);
-const cart = section('StoreCanvas cart', `<div class="sc-commerce"><h1>Your cart</h1>{% if cart.item_count == 0 %}<p>Cart is empty. <a href="{{ routes.all_products_collection_url }}">Continue shopping</a>.</p>{% else %}<form method="post" action="{{ routes.cart_url }}">{% for item in cart.items %}<div class="sc-cart-row">{% if item.image %}{{ item.image | image_url: width: 180 | image_tag: loading: 'lazy' }}{% endif %}<div><a href="{{ item.url }}">{{ item.product.title | escape }}</a><p>{{ item.final_line_price | money }}</p></div><label>Quantity <input type="number" name="updates[]" min="0" value="{{ item.quantity }}"></label></div>{% endfor %}<p>Subtotal {{ cart.total_price | money }}</p><button class="sc-cta" type="submit" name="update">Update cart</button><button class="sc-cta" type="submit" name="checkout">Checkout</button></form>{% endif %}</div>`);
+const cart = section('StoreCanvas cart', CART_SECTION);
 const page = section('StoreCanvas page', '<article class="sc-commerce"><h1>{{ page.title | escape }}</h1>{{ page.content }}</article>');
 const search = section('StoreCanvas search', `<div class="sc-commerce"><h1>Search</h1><form method="get" action="{{ routes.search_url }}"><label for="sc-search">Search products</label><input id="sc-search" name="q" type="search" value="{{ search.terms | escape }}"><button class="sc-cta" type="submit">Search</button></form><div class="sc-commerce-grid">{% for p in search.results %}<a href="{{ p.url }}">{% if p.featured_image %}{{ p.featured_image | image_url: width: 640 | image_tag: loading: 'lazy' }}{% endif %}<h2>{{ p.title | escape }}</h2></a>{% endfor %}</div></div>`);
 const notFound = section('StoreCanvas 404', '<div class="sc-commerce"><h1>Page not found</h1><a class="sc-cta" href="{{ routes.root_url }}">Go home</a></div>');
@@ -186,16 +290,17 @@ function compileShopifyTheme(project){
  const files=new Map(); const homeHtml=replaceMedia(preview.html,files);
  const liquid=section('StoreCanvas homepage',`<main class="sc-page">${homeHtml}</main>`);
  if(new TextEncoder().encode(liquid).length>230000)throw Error('Homepage exceeds safe Shopify section size; split it into pages');
- files.set('layout/theme.liquid',`<!doctype html><html lang="{{ request.locale.iso_code }}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ page_title | escape }} – {{ shop.name | escape }}</title>{{ content_for_header }}{{ 'storecanvas.css' | asset_url | stylesheet_tag }}<script>window.SC_HAPTICS_ENABLED=${preview.document.settings.haptics?'true':'false'};</script><script src="{{ 'storecanvas.js' | asset_url }}" defer></script></head><body><a class="sc-skip" href="#MainContent">Skip to content</a>{% section 'storecanvas-header' %}<div id="MainContent">{{ content_for_layout }}</div>{% section 'storecanvas-footer' %}</body></html>`);
- files.set('assets/storecanvas.css',preview.css+cssExtra);files.set('assets/storecanvas.js',preview.js);
+ files.set('layout/theme.liquid',`<!doctype html><html lang="{{ request.locale.iso_code }}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ page_title | escape }} – {{ shop.name | escape }}</title>{{ content_for_header }}{{ 'storecanvas.css' | asset_url | stylesheet_tag }}<script>window.SC_HAPTICS_ENABLED=${preview.document.settings.haptics?'true':'false'};</script><script src="{{ 'storecanvas.js' | asset_url }}" defer></script><script src="{{ 'storecanvas-commerce.js' | asset_url }}" defer></script></head><body><a class="sc-skip" href="#MainContent">Skip to content</a>{% section 'storecanvas-header' %}<div id="MainContent">{{ content_for_layout }}</div>{% section 'storecanvas-footer' %}</body></html>`);
+ files.set('assets/storecanvas.css',preview.css+cssExtra);files.set('assets/storecanvas.js',preview.js);files.set('assets/storecanvas-commerce.js',COMMERCE_JS);
  const sections={'storecanvas-home':liquid,'storecanvas-header':header,'storecanvas-footer':footer,'main-product':product,'main-collection':collection,'main-cart':cart,'main-page':page,'main-search':search,'main-404':notFound};
  for(const [name,body] of Object.entries(sections))files.set(`sections/${name}.liquid`,body);
  const templates={index:'storecanvas-home',product:'main-product',collection:'main-collection',cart:'main-cart',page:'main-page',search:'main-search','404':'main-404'};
  for(const [name,sectionName] of Object.entries(templates))files.set(`templates/${name}.json`,template(sectionName));
- files.set('config/settings_schema.json',JSON.stringify([{name:'theme_info',theme_name:'StoreCanvas Starter',theme_author:'StoreCanvas',theme_version:'0.5.0',theme_documentation_url:'https://shopify.dev/docs/storefronts/themes',theme_support_url:'https://shopify.dev/'}]));
+ files.set('config/settings_schema.json',JSON.stringify([{name:'theme_info',theme_name:'StoreCanvas Starter',theme_author:'StoreCanvas',theme_version:'0.6.0',theme_documentation_url:'https://shopify.dev/docs/storefronts/themes',theme_support_url:'https://shopify.dev/'}]));
  files.set('locales/en.default.json','{}');
  return files;
 }
+
 
 /* engine/zip.mjs */
 /** Small deterministic ZIP store writer (no compression, no external packages). */

@@ -1,33 +1,45 @@
-# StoreCanvas v0.5 release gates (November 21, 2026)
+# StoreCanvas production release gates — v0.5 (Nov 21, 2026)
 
-Checked = supported by a code change and a corresponding test or Shopify connector result; not a promise of a complete commercial product.
+Use [x] only where a local or remote check has produced evidence. Do not conflate source completion, GitHub CI, and Shopify production verification.
 
-## Foundation and reproducibility
-- [x] GitHub repository, development branch and draft PR
-- [x] Source for freeform canvas, responsive positions, nested layers, motion and slideshows
-- [x] Validated v0.3/v0.4 design schema and safe URL/document limits
-- [x] Shared homepage renderer for browser preview and Shopify export
-- [x] Exported illustration/upload images packaged as theme assets
-- [x] ZIP packer with CRC32 and unit checks
-- [x] Browser-compatible runtime generated from engine modules without dependencies
-- [x] Browser editor wired to the unified compiler
-- [ ] Latest GitHub Actions CI green (verify after push)
+## Foundation
+- [x] Private GitHub repository and development branch accessible
+- [x] Visual canvas editor source and example assets present
+- [x] Responsive sections, nested layers, motion presets, slideshow/haptic controls in prototype
+- [x] Versioned document validator with complexity limits and safe URL rules
+- [x] Shared compiler for HTML preview and generated Shopify homepage
+- [x] Editor uses the same Shopify compilation engine; old exporter replaced with adapter
+- [x] Local image bundling including format-signature checks
+- [x] Deterministic ZIP generation and CRC32 ZIP check
+- [x] Local Node tests (14) and constrained Chromium smoke test successful
+- [ ] GitHub CI on newest v0.5 commit green (verify after push)
 
-## Shopify verification
-- [x] Previous isolated freeform section on unpublished Horizon test theme
-- [ ] New v0.5 ZIP uploaded to Shopify test theme and validated with Theme Check
-- [ ] Full product/variant/cart/checkout/SEO/localization/accessibility tests
-- [ ] Multi-theme compatibility, responsive breakpoints and performance budgets
-- [ ] Approved theme-write permissions where automated theme file modifications are used
-- [ ] Versioned publishing, rollback and failure recovery
+## Shopify correctness
+- [x] Previous freeform demonstration section successfully committed to unpublished Horizon theme
+- [ ] **New v0.5 full-theme ZIP** uploaded and checked on an unpublished Shopify test theme
+- [ ] Shopify Theme Check / JSON schema and Liquid syntax audit for generated theme
+- [ ] Real product, variant inventory, cart, checkout and customer path QA
+- [ ] Storefront semantics, accessibility, SEO, localization, translation and mobile testing
+- [ ] Multiple theme/Shopify plan compatibility and app extension integration
+- [ ] Publishing transactional guarantees and rollback strategy
 
-## Production application
-- [ ] Shopify app scaffold and OAuth sessions
-- [ ] Multi-tenant data separation, database and secure asset storage
-- [ ] Compliance and uninstall webhooks, data deletion and privacy policy
-- [ ] Observability, backups, rate limiting, audit logging and end-to-end QA
-- [ ] Hosting and Shopify App Store approval (costs may apply)
+## Production SaaS / operational
+- [ ] Embedded Shopify app scaffold, OAuth and webhook signature validation
+- [ ] Merchant isolation, encrypted storage, secrets management, least-privilege permissions
+- [ ] Compliance webhooks, data retention/deletion and uninstall cleanup
+- [ ] API-backed asset and project storage, version history and backups
+- [ ] Multi-merchant QA, monitoring, performance budgets and incident recovery
+- [ ] Shopify App Store review, billing decisions and production deployment
 
-## Notes
-The new generated ZIP is a *separate starter theme*, not a patch for any merchant's existing live theme.
-Passing Node or browser tests does not prove Shopify approval. The live B-Bless Collections theme was not modified.
+## Safety status
+No live theme publishing performed. App deployment not begun. GitHub draft PR is for review only.
+
+
+## Compatibility milestones (2026-11-21)
+- [x] v0.5 homepage output and four SVGs accepted on unpublished Shopify Horizon (8 files).
+- [x] v0.6 product, cart, collection alternate templates accepted on unpublished Horizon (8 files).
+- [x] 18 Node tests and Chromium browser smoke test passed on v0.6.
+- [ ] Complete independent theme ZIP installed and Theme Check validated.
+- [ ] Verified variant add-to-cart, cart updates, checkout handoff in isolated dev store without real payment.
+- [ ] High-variant products (250+) supported and audited.
+- [ ] Accessible dynamic checkout, product media, translations and product forms fully implemented.
